@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun --version)",
+      "Bash(curl -fsSL https://bun.sh/install)",
+      "Bash(bash)",
+      "Bash(ls:*)",
+      "Bash(docker compose:*)",
+      "Bash(PGPASSWORD=cms psql -h localhost -U cms -d cms -f migrations/0001_phase_02_tables.sql 2>&1)",
+      "Bash(PGPASSWORD=cms psql -h localhost -U cms -d cms -c \"\\\\dt\" 2>&1)",
+      "Bash(PGPASSWORD=cms psql -h localhost -U cms -d cms -c \"SELECT name, is_system FROM roles ORDER BY name;\" 2>&1)"
+    ]
+  }
+}

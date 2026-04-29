@@ -1,0 +1,52 @@
+---
+interface Props {
+  heading: string
+  subheading?: string
+  image?: { url: string; alt?: string }
+  ctaLabel?: string
+  ctaUrl?: string
+}
+const { heading, subheading, image, ctaLabel, ctaUrl } = Astro.props
+---
+<section class="hero">
+  {image && <img src={image.url} alt={image.alt || ''} class="hero-image" />}
+  <h1>{heading}</h1>
+  {subheading && <p class="hero-sub">{subheading}</p>}
+  {ctaLabel && ctaUrl && <a href={ctaUrl} class="hero-cta">{ctaLabel}</a>}
+</section>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+  }
+  .hero-image {
+    max-width: 100%;
+    border-radius: 0.75rem;
+    margin-bottom: var(--space-lg);
+  }
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: var(--space-sm);
+  }
+  .hero-sub {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    max-width: 50ch;
+    margin: 0 auto;
+  }
+  .hero-cta {
+    display: inline-block;
+    margin-top: var(--space-lg);
+    padding: 0.75rem 1.5rem;
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .hero-cta:hover {
+    opacity: 0.9;
+    text-decoration: none;
+  }
+</style>

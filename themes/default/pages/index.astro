@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro'
+
+// In production, this fetches from the CMS API
+// For v0.1 the data will be passed in by the Astro integration
+const recentArticles: any[] = []
+const featuredProjects: any[] = []
+---
+<Base title="Home">
+  <section class="hero">
+    <h1>Welcome</h1>
+    <p class="hero-sub">A modern CMS built for developers and content teams.</p>
+  </section>
+
+  {recentArticles.length > 0 && (
+    <section class="section">
+      <h2>Recent Articles</h2>
+      <div class="list">
+        {recentArticles.map((article: any) => (
+          <a href={`/article/${article.slug || article.id}`} class="list-item">
+            <h3>{article.title}</h3>
+            {article.excerpt && <p>{article.excerpt}</p>}
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {featuredProjects.length > 0 && (
+    <section class="section">
+      <h2>Projects</h2>
+      <div class="grid">
+        {featuredProjects.map((project: any) => (
+          <a href={`/project/${project.slug || project.id}`} class="card">
+            <h3>{project.title}</h3>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .hero { text-align: center; padding: var(--space-2xl) 0; }
+  .hero h1 { font-size: 3rem; }
+  .hero-sub { font-size: 1.25rem; color: var(--color-text-muted); max-width: 45ch; margin: var(--space-md) auto 0; }
+  .section { margin-top: var(--space-2xl); }
+  .section h2 { margin-bottom: var(--space-lg); }
+  .list { display: flex; flex-direction: column; gap: var(--space-md); }
+  .list-item { display: block; padding: var(--space-md); border: 1px solid var(--color-border); border-radius: 0.5rem; text-decoration: none; }
+  .list-item:hover { border-color: var(--color-accent); text-decoration: none; }
+  .list-item h3 { color: var(--color-primary); margin-bottom: var(--space-xs); }
+  .list-item p { color: var(--color-text-muted); font-size: 0.9rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-md); }
+  .card { padding: var(--space-lg); border: 1px solid var(--color-border); border-radius: 0.5rem; text-decoration: none; }
+  .card:hover { border-color: var(--color-accent); text-decoration: none; }
+  .card h3 { color: var(--color-primary); font-size: 1rem; }
+</style>

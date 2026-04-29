@@ -1,0 +1,38 @@
+---
+interface Props {
+  siteName?: string
+}
+const { siteName = 'CMS' } = Astro.props
+---
+<nav class="nav">
+  <a href="/" class="nav-brand">{siteName}</a>
+  <ul class="nav-links">
+    <li><a href="/article">Articles</a></li>
+    <li><a href="/project">Projects</a></li>
+  </ul>
+</nav>
+
+<style>
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) 0;
+  }
+  .nav-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: var(--space-lg);
+    list-style: none;
+    padding: 0;
+  }
+  .nav-links a {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+</style>

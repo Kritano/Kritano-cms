@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro'
+
+const { doc } = Astro.props
+const title = doc?.seo?.metaTitle || doc?.title || 'Project'
+---
+<Base title={title}>
+  <article class="project">
+    <header>
+      <h1>{doc?.title}</h1>
+      {doc?.url && <a href={doc.url} class="project-link" target="_blank" rel="noopener">{doc.url} ↗</a>}
+    </header>
+
+    {doc?.description?.html && <div class="prose" set:html={doc.description.html} />}
+
+    {doc?.images?.length > 0 && (
+      <div class="project-images">
+        {doc.images.map((img: any) => {
+          const url = typeof img === 'string' ? img : img?.url
+          return url && <img src={url} alt="" />
+        })}
+      </div>
+    )}
+
+    {doc?.tags?.length > 0 && (
+      <div class="project-tags">
+        {doc.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+      </div>
+    )}
+  </article>
+</Base>
+
+<style>
+  .project { max-width: var(--max-width); margin: 0 auto; }
+  .project-link { display: inline-block; margin-top: var(--space-sm); font-size: 0.875rem; }
+  .project-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-md); margin-top: var(--space-xl); }
+  .project-images img { width: 100%; border-radius: 0.5rem; }
+  .project-tags { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-xl); }
+  .tag { background: var(--color-bg-alt); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.8rem; color: var(--color-text-muted); }
+</style>

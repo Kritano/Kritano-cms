@@ -1,0 +1,34 @@
+---
+import Base from '../../../layouts/Base.astro'
+import Hero from '../../../components/blocks/Hero.astro'
+import TextBlock from '../../../components/blocks/TextBlock.astro'
+import ImageGallery from '../../../components/blocks/ImageGallery.astro'
+import { fetchAPI } from '../../lib/api'
+
+const { slug } = Astro.params
+
+let doc: any = null
+try {
+  const res = await fetchAPI(`/page/slug/${slug}`)
+  doc = res.data
+} catch {}
+
+if (!doc) return Astro.redirect('/404')
+
+const title = doc.seo?.metaTitle || doc.title || 'Page'
+const description = doc.seo?.metaDescription || ''
+---
+<Base title={title} description={description}>
+  <article>
+    <h1>{doc.title}</h1>
+
+    {doc.body?.html && <div class="prose" set:html={doc.body.html} />}
+
+    {doc.content?.map((block: any) => {
+      if (block.type === 'hero') return <Hero {...block.fields} />
+      if (block.type === 'text-block') return <TextBlock {...block.fields} />
+      if (block.type === 'image-gallery') return <ImageGallery {...block.fields} />
+      return null
+    })}
+  </article>
+</Base>

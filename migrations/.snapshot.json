@@ -1,0 +1,305 @@
+{
+  "tables": {
+    "pages": {
+      "name": "pages",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "uuid",
+          "nullable": false,
+          "defaultValue": "gen_random_uuid()",
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "status",
+          "sqlType": "varchar(20)",
+          "nullable": false,
+          "defaultValue": "'draft'",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "created_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "published_at",
+          "sqlType": "timestamptz",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "title",
+          "sqlType": "varchar(255)",
+          "nullable": false,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "slug",
+          "sqlType": "varchar(255)",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "body",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "content",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "featured_image",
+          "sqlType": "uuid",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": {
+            "table": "media",
+            "column": "id"
+          }
+        },
+        {
+          "name": "seo",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        }
+      ]
+    },
+    "articles": {
+      "name": "articles",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "uuid",
+          "nullable": false,
+          "defaultValue": "gen_random_uuid()",
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "status",
+          "sqlType": "varchar(20)",
+          "nullable": false,
+          "defaultValue": "'draft'",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "created_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "published_at",
+          "sqlType": "timestamptz",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "title",
+          "sqlType": "varchar(255)",
+          "nullable": false,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "slug",
+          "sqlType": "varchar(255)",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "body",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "excerpt",
+          "sqlType": "text",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "tags",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "featured_image",
+          "sqlType": "uuid",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": {
+            "table": "media",
+            "column": "id"
+          }
+        },
+        {
+          "name": "seo",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        }
+      ]
+    },
+    "projects": {
+      "name": "projects",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "uuid",
+          "nullable": false,
+          "defaultValue": "gen_random_uuid()",
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "status",
+          "sqlType": "varchar(20)",
+          "nullable": false,
+          "defaultValue": "'draft'",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "created_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "timestamptz",
+          "nullable": false,
+          "defaultValue": "now()",
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "published_at",
+          "sqlType": "timestamptz",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "title",
+          "sqlType": "varchar(255)",
+          "nullable": false,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "slug",
+          "sqlType": "varchar(255)",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": true,
+          "references": null
+        },
+        {
+          "name": "description",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "url",
+          "sqlType": "varchar(2048)",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "tags",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "images",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        },
+        {
+          "name": "seo",
+          "sqlType": "jsonb",
+          "nullable": true,
+          "defaultValue": null,
+          "unique": false,
+          "references": null
+        }
+      ]
+    }
+  }
+}

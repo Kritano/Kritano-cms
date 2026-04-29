@@ -1,0 +1,86 @@
+---
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description } = Astro.props
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="stylesheet" href="/global.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container">
+        <a href="/" class="site-name">CMS</a>
+        <ul class="nav-links">
+          <li><a href="/article">Articles</a></li>
+          <li><a href="/project">Projects</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; {new Date().getFullYear()}. Built with Kritano CMS.</p>
+      </div>
+    </footer>
+
+    <style>
+      .site-header {
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--space-md) 0;
+      }
+      .site-header nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .site-name {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--color-primary);
+        text-decoration: none;
+      }
+      .nav-links {
+        display: flex;
+        gap: var(--space-lg);
+        list-style: none;
+        padding: 0;
+      }
+      .nav-links a {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+      }
+      .nav-links a:hover {
+        color: var(--color-primary);
+      }
+      .container {
+        max-width: var(--max-width-wide);
+        margin: 0 auto;
+        padding: 0 var(--space-lg);
+      }
+      main {
+        flex: 1;
+        padding: var(--space-xl) var(--space-lg);
+      }
+      .site-footer {
+        border-top: 1px solid var(--color-border);
+        padding: var(--space-lg) 0;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-align: center;
+      }
+    </style>
+  </body>
+</html>

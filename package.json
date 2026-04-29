@@ -1,0 +1,16 @@
+{
+  "name": "kritano-cms",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "dependencies": {
+    "@img/sharp-darwin-arm64": "^0.34.5",
+    "date-fns-tz": "^3.2.0",
+    "sharp": "^0.34.5"
+  }
+}

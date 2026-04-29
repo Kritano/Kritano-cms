@@ -1,0 +1,20 @@
+{
+  "name": "@cms/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "cms": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cms/core": "workspace:*",
+    "@cms/types": "workspace:*",
+    "bcryptjs": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "bun-types": "^1.3.0"
+  }
+}

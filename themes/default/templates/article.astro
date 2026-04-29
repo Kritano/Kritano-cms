@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro'
+
+const { doc } = Astro.props
+const title = doc?.seo?.metaTitle || doc?.title || 'Article'
+const description = doc?.seo?.metaDescription || doc?.excerpt || ''
+const publishedDate = doc?.published_at ? new Date(doc.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null
+---
+<Base title={title} description={description}>
+  <article class="article">
+    <header class="article-header">
+      <h1>{doc?.title}</h1>
+      {publishedDate && <time class="article-date">{publishedDate}</time>}
+      {doc?.excerpt && <p class="article-excerpt">{doc.excerpt}</p>}
+    </header>
+
+    {doc?.featured_image && (
+      <img src={doc.featured_image} alt="" class="article-image" />
+    )}
+
+    {doc?.body?.html && <div class="prose" set:html={doc.body.html} />}
+
+    {doc?.tags?.length > 0 && (
+      <div class="article-tags">
+        {doc.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+      </div>
+    )}
+  </article>
+</Base>
+
+<style>
+  .article { max-width: var(--max-width); margin: 0 auto; }
+  .article-header { margin-bottom: var(--space-xl); }
+  .article-date { display: block; color: var(--color-text-muted); font-size: 0.875rem; margin-top: var(--space-sm); }
+  .article-excerpt { color: var(--color-text-muted); font-size: 1.125rem; margin-top: var(--space-md); }
+  .article-image { width: 100%; border-radius: 0.75rem; margin-bottom: var(--space-xl); }
+  .article-tags { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-xl); }
+  .tag { background: var(--color-bg-alt); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.8rem; color: var(--color-text-muted); }
+</style>

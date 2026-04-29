@@ -1,0 +1,41 @@
+---
+import Base from '../../../layouts/Base.astro'
+import { fetchAPI } from '../../lib/api'
+
+let items: any[] = []
+try {
+  const res = await fetchAPI('/article?status=published&sort=published_at&order=desc&limit=100')
+  items = res.data || []
+} catch {}
+---
+<Base title="Articles">
+  <section>
+    <h1>Articles</h1>
+    {items.length === 0 ? (
+      <p class="empty">No articles published yet.</p>
+    ) : (
+      <div class="list">
+        {items.map((item: any) => (
+          <a href={`/article/${item.slug || item.id}`} class="list-item">
+            <h2>{item.title}</h2>
+            {item.excerpt && <p>{item.excerpt}</p>}
+            {item.published_at && (
+              <time>{new Date(item.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
+            )}
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>
+
+<style>
+  h1 { margin-bottom: var(--space-xl); }
+  .empty { color: var(--color-text-muted); }
+  .list { display: flex; flex-direction: column; gap: var(--space-lg); }
+  .list-item { display: block; padding: var(--space-lg); border: 1px solid var(--color-border); border-radius: 0.75rem; text-decoration: none; transition: border-color 0.15s; }
+  .list-item:hover { border-color: var(--color-accent); text-decoration: none; }
+  .list-item h2 { font-size: 1.25rem; color: var(--color-primary); margin-bottom: var(--space-xs); }
+  .list-item p { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: var(--space-sm); }
+  .list-item time { font-size: 0.8rem; color: var(--color-text-muted); }
+</style>

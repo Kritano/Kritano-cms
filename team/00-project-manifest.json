@@ -1,0 +1,28 @@
+{
+  "project": "Kritano CMS",
+  "created": "2026-04-28T00:00:00Z",
+  "departments_completed": [],
+  "departments_pending": [
+    "software"
+  ],
+  "artifacts": {
+    "project-brief": "team/00-project-brief.md",
+    "architecture": "team/06-software/architecture.md",
+    "database": "team/06-software/database.md",
+    "api": "team/06-software/api.md"
+  },
+  "execution_plan": [
+    { "phase": 1, "task": "Task 01 — @cms/types", "status": "completed" },
+    { "phase": 2, "task": "Task 02 — @cms/core Schema DSL", "status": "completed" },
+    { "phase": 3, "task": "Task 03 — @cms/core Database Layer", "status": "completed" },
+    { "phase": 4, "task": "Task 04 — @cms/core API Server", "status": "completed" },
+    { "phase": 5, "task": "Task 05 — @cms/admin Scaffold & Auth", "status": "completed" },
+    { "phase": 6, "task": "Task 06 — @cms/admin Collection List & Editor", "status": "completed" },
+    { "phase": 7, "task": "Task 07 — @cms/admin Media Library", "status": "completed" },
+    { "phase": 8, "task": "Task 08 — @cms/admin Site Settings & Kritano", "status": "completed" },
+    { "phase": 9, "task": "Task 09 — @cms/admin Deployment Page", "status": "completed" },
+    { "phase": 10, "task": "Task 10 — @cms/sdk", "status": "completed" },
+    { "phase": 11, "task": "Task 11 — @cms/astro Integration & Default Theme", "status": "completed" },
+    { "phase": 12, "task": "Task 12 — @cms/cli", "status": "completed" }
+  ]
+}

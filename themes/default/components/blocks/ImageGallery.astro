@@ -1,0 +1,37 @@
+---
+interface Props {
+  images: Array<{ url: string; alt?: string } | string>
+  caption?: string
+}
+const { images = [], caption } = Astro.props
+---
+<figure class="gallery">
+  <div class="gallery-grid">
+    {images.map((img) => {
+      const url = typeof img === 'string' ? img : img.url
+      const alt = typeof img === 'string' ? '' : img.alt || ''
+      return <img src={url} alt={alt} />
+    })}
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-md);
+  }
+  .gallery-grid img {
+    border-radius: 0.5rem;
+    width: 100%;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+  }
+  figcaption {
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+</style>

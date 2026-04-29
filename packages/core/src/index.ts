@@ -1,0 +1,74 @@
+// Schema DSL
+export { defineConfig } from './schema/defineConfig'
+export { defineCollection } from './schema/defineCollection'
+export { validateSchema, SchemaValidationError } from './schema/validate'
+
+// Field builders
+export {
+  text,
+  textarea,
+  richText,
+  slug,
+  url,
+  number,
+  boolean,
+  datetime,
+  select,
+  multiSelect,
+  media,
+  relation,
+  seoBlock,
+  blocks,
+  block,
+  array,
+  colour,
+} from './schema/fields'
+
+// Field builder classes (for extension)
+export { FieldBuilder } from './schema/fields'
+
+// Database layer
+export {
+  getClient,
+  getDb,
+  closeConnection,
+  getConnectionString,
+  collectionToTable,
+  collectionToTableName,
+  fieldToColumn,
+  fieldToColumnName,
+  generateCreateTableSQL,
+  generateMediaTableSQL,
+  generateUsersTableSQL,
+  generateSiteSettingsTableSQL,
+  generateFullSchemaSQL,
+  createMigration,
+  diffSnapshots,
+  listMigrations,
+  runMigrations,
+  type TableDefinition,
+  type ColumnDefinition,
+  type MigrationFile,
+  type SchemaSnapshot,
+} from './db'
+
+// API server
+export { createServer, startServer } from './api/server'
+export { createApiRouter } from './api/router'
+export { requireAuth, optionalAuth, signToken, signRefreshToken, verifyToken } from './api/middleware/auth'
+export { requirePermission } from './api/middleware/permission'
+export { createCollectionRoutes } from './api/routes/collection'
+export { buildGraphQLSchema } from './api/graphql/schema-builder'
+export { buildResolvers } from './api/graphql/resolvers'
+
+// Revisions
+export { createRevision } from './lib/revisions'
+
+// Scheduler
+export { getScheduleQueue, startScheduleWorker, closeScheduler } from './lib/scheduler'
+
+// Permissions & activity
+export { getUserRoles, checkPermission } from './lib/permissions'
+export type { Permissions, RoleWithPermissions } from './lib/permissions'
+export { logActivity } from './lib/activity-logger'
+export type { ActivityLogEntry } from './lib/activity-logger'
