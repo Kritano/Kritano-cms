@@ -146,7 +146,7 @@ export function DocumentEditor({ collection, id }: Props) {
 
   const status = (fields.status as string) || (docData?.data?.status) || 'draft'
   const slugValue = fields.slug as string | undefined
-  const previewUrl = slugValue ? `http://localhost:4321/${collection}/${slugValue}` : null
+  const previewUrl = slugValue ? `${window.location.origin}/${collection}/${slugValue}` : null
 
   return (
     <div className="flex h-full gap-0">

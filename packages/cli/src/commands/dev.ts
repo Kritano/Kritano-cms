@@ -6,6 +6,7 @@ import { loadConfig, getProjectRoot } from '../utils/config'
 import { ensureDockerRunning } from '../utils/docker'
 import { createMigration, runMigrations, getClient } from '@cms/core'
 import bcrypt from 'bcryptjs'
+import { generate } from './generate'
 
 async function ensureInitialMigration() {
   const root = getProjectRoot()
@@ -77,20 +78,20 @@ export async function dev() {
   // 6. Generate types
   log.step('Generating types…')
   try {
-    await $`bun run packages/cli/src/commands/generate.ts`.quiet()
-    log.success('Types generated')
+    await generate()
   } catch {
     log.warn('Type generation skipped')
   }
 
   const apiPort = process.env.PORT || '3005'
-  const adminPort = process.env.ADMIN_PORT || '3006'
-  const frontendPort = '4321'
+  const proxyPort = process.env.DEV_PORT || '3006'
+  const viteInternalPort = '3007'
+  const astroInternalPort = '4321'
 
   log.header('Starting servers')
   log.url('API', `http://localhost:${apiPort}`)
-  log.url('Admin', `http://localhost:${adminPort}/admin`)
-  log.url('Frontend', `http://localhost:${frontendPort}`)
+  log.url('Admin', `http://localhost:${proxyPort}/admin`)
+  log.url('Frontend', `http://localhost:${proxyPort}`)
   log.url('GraphQL', `http://localhost:${apiPort}/api/graphql`)
   log.url('Health', `http://localhost:${apiPort}/api/health`)
   console.log('')
@@ -103,23 +104,57 @@ export async function dev() {
     env: { ...process.env, PORT: apiPort },
   })
 
-  // 8. Start admin UI dev server (Vite, proxies /api to API port)
-  const adminProc = Bun.spawn(['bun', 'run', '--cwd', 'packages/admin', 'dev', '--', '--port', adminPort], {
+  // 8. Start admin UI dev server (Vite on internal port, not user-facing)
+  const adminProc = Bun.spawn(['bun', 'run', '--cwd', 'packages/admin', 'dev', '--', '--port', viteInternalPort], {
     stdio: ['inherit', 'inherit', 'inherit'],
+    env: { ...process.env, PORT: apiPort, VITE_INTERNAL_PORT: viteInternalPort },
   })
 
-  // 9. Start Astro frontend dev server
-  const frontendProc = Bun.spawn(['bunx', 'astro', 'dev', '--port', frontendPort], {
+  // 9. Start Astro frontend dev server (on internal port, not user-facing)
+  const frontendProc = Bun.spawn(['bunx', 'astro', 'dev', '--port', astroInternalPort], {
     cwd: resolve(getProjectRoot(), 'themes/default'),
     stdio: ['inherit', 'inherit', 'inherit'],
-    env: { ...process.env, CMS_API_URL: `http://localhost:${apiPort}/api` },
+    env: { ...process.env, CMS_API_URL: `http://localhost:${apiPort}/api`, ASTRO_INTERNAL_PORT: astroInternalPort },
   })
+
+  // 10. Start reverse proxy — single entry point for admin + frontend
+  const proxy = Bun.serve({
+    port: parseInt(proxyPort),
+    async fetch(req) {
+      const url = new URL(req.url)
+
+      let target: string
+      if (url.pathname.startsWith('/api')) {
+        target = `http://localhost:${apiPort}`
+      } else if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/@') || url.pathname.startsWith('/__vite') || url.pathname.startsWith('/node_modules/.vite')) {
+        target = `http://localhost:${viteInternalPort}`
+      } else {
+        target = `http://localhost:${astroInternalPort}`
+      }
+
+      try {
+        const proxyUrl = `${target}${url.pathname}${url.search}`
+        return await fetch(proxyUrl, {
+          method: req.method,
+          headers: req.headers,
+          body: req.body,
+          // @ts-ignore — Bun supports duplex for streaming request bodies
+          duplex: 'half',
+        })
+      } catch {
+        return new Response('Service not ready', { status: 502 })
+      }
+    },
+  })
+
+  log.success(`Dev proxy running on http://localhost:${proxyPort}`)
 
   // Handle shutdown
   const cleanup = () => {
     apiProc.kill()
     adminProc.kill()
     frontendProc.kill()
+    proxy.stop()
     process.exit(0)
   }
   process.on('SIGINT', cleanup)

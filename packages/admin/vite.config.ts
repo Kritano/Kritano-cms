@@ -12,12 +12,16 @@ export default defineConfig({
     },
   },
   server: {
-    port: parseInt(process.env.ADMIN_PORT || '3006'),
+    port: parseInt(process.env.VITE_INTERNAL_PORT || process.env.ADMIN_PORT || '3006'),
     proxy: {
       '/api': {
         target: `http://localhost:${process.env.PORT || '3005'}`,
         changeOrigin: true,
       },
+    },
+    hmr: {
+      // When behind dev proxy, HMR WebSocket connects directly to Vite's port
+      ...(process.env.VITE_INTERNAL_PORT ? { clientPort: parseInt(process.env.VITE_INTERNAL_PORT) } : {}),
     },
   },
   build: {
