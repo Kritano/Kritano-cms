@@ -93,11 +93,20 @@ const articles = await cms.collection('article').findMany({
 
 ## Admin features
 
-- **Collection list** — search, bulk select, bulk delete
+- **Collection list** — search, bulk select, bulk publish/unpublish/delete
 - **Document editor** — schema-driven fields, three-mode rich text editor (Visual / Markdown / Split), flexible content blocks with drag-to-reorder
-- **Media library** — drag-and-drop upload, auto WebP conversion, alt text, media picker in editor
+- **Revision history** — automatic snapshots on every save, preview and restore any version
+- **Scheduled publishing** — publish at a future date/time with timezone support
+- **Content calendar** — month view of published and scheduled content across all collections
+- **Media library** — folders, drag-and-drop upload, auto WebP conversion, usage tracking
+- **Forms builder** — 8 field types, drag-to-reorder, zero-JS rendering on Astro, progressive enhancement, third-party embed
+- **Users and roles** — 6 built-in roles, custom roles with per-collection permissions, invitation flow, 2FA
+- **Webhooks** — 9 events, HMAC signing, retry with backoff, delivery log
+- **Redirects** — 301/302 with hit tracking, chain detection, CSV import/export
+- **API keys** — scoped access for headless frontends and integrations
+- **MCP server** — connect Claude Desktop or Cursor to manage content via AI
 - **Site health** — Kritano integration for SEO, accessibility, and performance scoring
-- **Deployment** — generate a single bash script to deploy to any Linux server
+- **Deployment** — setup script, zero-downtime update script, backup management
 
 ## Field types
 
@@ -116,6 +125,14 @@ All fields are chainable: `text().required().min(3).max(100)`
 | Themes | [docs/themes.md](docs/themes.md) |
 | Deployment | [docs/deployment.md](docs/deployment.md) |
 | Kritano integration | [docs/kritano.md](docs/kritano.md) |
+| Users and roles | [docs/users-and-roles.md](docs/users-and-roles.md) |
+| Revision history | [docs/revisions.md](docs/revisions.md) |
+| Scheduled publishing | [docs/scheduling.md](docs/scheduling.md) |
+| Forms | [docs/forms.md](docs/forms.md) |
+| Redirects | [docs/redirects.md](docs/redirects.md) |
+| Webhooks | [docs/webhooks.md](docs/webhooks.md) |
+| API keys | [docs/api-keys.md](docs/api-keys.md) |
+| MCP server | [docs/mcp.md](docs/mcp.md) |
 
 ## Project structure
 

@@ -12,10 +12,10 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3002,
+    port: parseInt(process.env.ADMIN_PORT || '3006'),
     proxy: {
       '/api': {
-        target: `http://localhost:${process.env.PORT || '3001'}`,
+        target: `http://localhost:${process.env.PORT || '3005'}`,
         changeOrigin: true,
       },
     },

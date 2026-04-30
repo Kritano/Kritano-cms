@@ -83,8 +83,8 @@ export async function dev() {
     log.warn('Type generation skipped')
   }
 
-  const apiPort = process.env.PORT || '3001'
-  const adminPort = '3002'
+  const apiPort = process.env.PORT || '3005'
+  const adminPort = process.env.ADMIN_PORT || '3006'
   const frontendPort = '4321'
 
   log.header('Starting servers')

@@ -6,6 +6,14 @@ import {
   Settings,
   Server,
   Activity,
+  Users,
+  Shield,
+  ClipboardList,
+  Lock,
+  CalendarDays,
+  FileInput,
+  CornerDownRight,
+  Webhook,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -38,11 +46,28 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
     icon: COLLECTION_ICONS[name] || FileText,
   }))
 
+  const contentItems: NavItem[] = [
+    { label: 'Forms', href: '/admin/forms', icon: FileInput },
+    { label: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
+  ]
+
+  const teamItems: NavItem[] = [
+    { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Roles', href: '/admin/roles', icon: Shield },
+    { label: 'Activity Log', href: '/admin/activity', icon: ClipboardList },
+  ]
+
   const systemItems: NavItem[] = [
     { label: 'Media', href: '/admin/media', icon: Image },
+    { label: 'Redirects', href: '/admin/redirects', icon: CornerDownRight },
+    { label: 'Webhooks', href: '/admin/webhooks', icon: Webhook },
     { label: 'Site', href: '/admin/site', icon: Settings },
     { label: 'Site Health', href: '/admin/site/health', icon: Activity },
     { label: 'Deployment', href: '/admin/deployment', icon: Server },
+  ]
+
+  const accountItems: NavItem[] = [
+    { label: 'Security', href: '/admin/account/security', icon: Lock },
   ]
 
   function isActive(href: string): boolean {
@@ -83,6 +108,18 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
           {collectionItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
           ))}
+          {contentItems.map((item) => (
+            <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+          ))}
+
+          <div className="my-4 border-t border-gray-800" />
+
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Team
+          </p>
+          {teamItems.map((item) => (
+            <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+          ))}
 
           <div className="my-4 border-t border-gray-800" />
 
@@ -90,6 +127,15 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
             System
           </p>
           {systemItems.map((item) => (
+            <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+          ))}
+
+          <div className="my-4 border-t border-gray-800" />
+
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Account
+          </p>
+          {accountItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
           ))}
         </nav>

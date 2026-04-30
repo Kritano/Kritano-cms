@@ -7,12 +7,15 @@ import { createApiRouter } from './router'
 import { buildGraphQLSchema } from './graphql/schema-builder'
 import { buildResolvers } from './graphql/resolvers'
 import { startScheduleWorker } from '../lib/scheduler'
+import { startWebhookWorker } from '../lib/webhooks'
+import { redirectMiddleware } from './middleware/redirects'
 
 export function createServer(config: CmsConfig): Hono {
   const app = new Hono()
 
   // Global middleware
   app.use('*', corsMiddleware)
+  app.use('*', redirectMiddleware)
   app.onError(errorHandler)
 
   // REST API routes
@@ -42,6 +45,7 @@ export function startServer(config: CmsConfig, port = 3000): void {
 
   // Start background workers
   startScheduleWorker()
+  startWebhookWorker()
 
   console.log(`CMS API server starting on http://localhost:${port}`)
   console.log(`  REST API: http://localhost:${port}/api`)

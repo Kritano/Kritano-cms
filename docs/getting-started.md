@@ -188,6 +188,10 @@ The `.env` file configures your local environment:
 | `SITE_URL` | `http://localhost:4321` | Public URL of the frontend |
 | `ADMIN_URL` | `http://localhost:3000/admin` | Admin UI URL (used for CORS) |
 
+## Connect Claude Desktop (MCP)
+
+Kritano CMS has a built-in MCP server that lets Claude Desktop and Cursor manage your content directly. See [MCP server](mcp.md) for setup instructions.
+
 ## Next steps
 
 - [Collections](collections.md) — learn all 16 field types and the schema DSL
@@ -196,3 +200,11 @@ The `.env` file configures your local environment:
 - [Themes](themes.md) — build an Astro theme for your frontend
 - [Deployment](deployment.md) — deploy to a production server
 - [Kritano integration](kritano.md) — site health scoring
+- [Users and roles](users-and-roles.md) — team management, permissions, 2FA
+- [Revision history](revisions.md) — document versioning and restore
+- [Scheduled publishing](scheduling.md) — publish at a future date
+- [Forms](forms.md) — form builder with zero-JS rendering
+- [Redirects](redirects.md) — URL redirect management
+- [Webhooks](webhooks.md) — outbound event notifications
+- [API keys](api-keys.md) — headless API authentication
+- [MCP server](mcp.md) — connect AI assistants to your CMS

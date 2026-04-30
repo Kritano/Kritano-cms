@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -31,6 +31,26 @@ export function CollectionList({ collection }: Props) {
     },
   })
 
+  const publishMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => api(`/${collection}/${id}/publish`, { method: 'POST' })))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collection', collection] })
+      setSelected(new Set())
+    },
+  })
+
+  const unpublishMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => api(`/${collection}/${id}/unpublish`, { method: 'POST' })))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collection', collection] })
+      setSelected(new Set())
+    },
+  })
+
   const items = (data?.data || []) as any[]
   const filtered = search
     ? items.filter((item: any) => item.title?.toLowerCase().includes(search.toLowerCase()))
@@ -52,11 +72,20 @@ export function CollectionList({ collection }: Props) {
   }
 
   function handleBulkDelete() {
-    if (confirm(`Delete ${selected.size} item(s)?`)) {
+    if (confirm(`Delete ${selected.size} document(s)? This cannot be undone.`)) {
       deleteMutation.mutate(Array.from(selected))
     }
   }
 
+  function handleBulkPublish() {
+    publishMutation.mutate(Array.from(selected))
+  }
+
+  function handleBulkUnpublish() {
+    unpublishMutation.mutate(Array.from(selected))
+  }
+
+  const bulkLoading = deleteMutation.isPending || publishMutation.isPending || unpublishMutation.isPending
   const title = collection.charAt(0).toUpperCase() + collection.slice(1) + 's'
 
   return (
@@ -83,13 +112,31 @@ export function CollectionList({ collection }: Props) {
             className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
           />
         </div>
-        {selected.size > 0 && (
-          <Button variant="danger" size="sm" onClick={handleBulkDelete} disabled={deleteMutation.isPending}>
-            <Trash2 size={16} className="mr-1" />
-            Delete ({selected.size})
-          </Button>
-        )}
       </div>
+
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5">
+          <span className="text-sm font-medium text-gray-700">{selected.size} selected</span>
+          <div className="ml-auto flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handleBulkPublish} disabled={bulkLoading}>
+              <ArrowUpCircle size={14} className="mr-1" />
+              Publish
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleBulkUnpublish} disabled={bulkLoading}>
+              <ArrowDownCircle size={14} className="mr-1" />
+              Unpublish
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleBulkDelete} disabled={bulkLoading}>
+              <Trash2 size={14} className="mr-1" />
+              Delete
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       {isLoading ? (
@@ -146,7 +193,12 @@ export function CollectionList({ collection }: Props) {
                     </Link>
                   </td>
                   <td className="px-3 py-2.5">
-                    <Badge variant={item.status === 'published' ? 'success' : 'default'}>
+                    <Badge
+                      variant={
+                        item.status === 'published' ? 'success' :
+                        item.status === 'scheduled' ? 'warning' : 'default'
+                      }
+                    >
                       {item.status}
                     </Badge>
                   </td>

@@ -2,11 +2,12 @@ import { Hono } from 'hono'
 import type { CollectionDefinition, FieldDefinition } from '@cms/types'
 import { getClient } from '../../db/client'
 import { collectionToTableName, fieldToColumnName } from '../../db/schema-generator'
-import { requireAuth, optionalAuth } from '../middleware/auth'
+import { requireAuth, optionalAuth, requireScope } from '../middleware/auth'
 import type { AuthEnv } from '../middleware/auth'
 import { createRevision } from '../../lib/revisions'
 import { getScheduleQueue, type ScheduleJobData } from '../../lib/scheduler'
 import { fromZonedTime } from 'date-fns-tz'
+import { dispatchWebhookEvent } from '../../lib/webhooks'
 
 const JSONB_TYPES = new Set(['richText', 'seoBlock', 'blocks', 'multiSelect', 'array'])
 
@@ -130,7 +131,7 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
   })
 
   // POST /api/:collection — Create
-  app.post(`/${collection.name}`, requireAuth, async (c) => {
+  app.post(`/${collection.name}`, requireAuth, requireScope('content:write'), async (c) => {
     const sql = getClient()
     const body = await c.req.json()
 
@@ -159,11 +160,13 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       values,
     )
 
+    dispatchWebhookEvent('content.created', { id: (rows[0] as Record<string, unknown>).id, collection: collection.name, document: rows[0] }).catch(() => {})
+
     return c.json({ data: rows[0] }, 201)
   })
 
   // PUT /api/:collection/:id — Full update (sets omitted fields to null)
-  app.put(`/${collection.name}/:id`, requireAuth, async (c) => {
+  app.put(`/${collection.name}/:id`, requireAuth, requireScope('content:write'), async (c) => {
     const sql = getClient()
     const id = c.req.param('id')
     const body = await c.req.json()
@@ -201,16 +204,30 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     if (rows.length === 0) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404)
     }
+
+    dispatchWebhookEvent('content.updated', { id, collection: collection.name, document: rows[0] }).catch(() => {})
 
     return c.json({ data: rows[0] })
   })
 
   // PATCH /api/:collection/:id — Partial update
-  app.patch(`/${collection.name}/:id`, requireAuth, async (c) => {
+  app.patch(`/${collection.name}/:id`, requireAuth, requireScope('content:write'), async (c) => {
     const sql = getClient()
     const id = c.req.param('id')
     const body = await c.req.json()
     const user = c.get('user')
+
+    // Capture current slug before update (for redirect suggestion)
+    let oldSlug: string | null = null
+    if (body.slug !== undefined && collection.fields.slug) {
+      const currentDoc = await sql.unsafe(
+        `SELECT slug FROM "${tableName}" WHERE id = $1 LIMIT 1`,
+        [id],
+      )
+      if (currentDoc.length > 0) {
+        oldSlug = (currentDoc[0] as Record<string, unknown>).slug as string | null
+      }
+    }
 
     // Snapshot current state before updating
     await createRevision(id, collection.name, tableName, user?.sub ?? null)
@@ -245,11 +262,24 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404)
     }
 
-    return c.json({ data: rows[0] })
+    dispatchWebhookEvent('content.updated', { id, collection: collection.name, document: rows[0] }).catch(() => {})
+
+    // Slug change detection — suggest a redirect
+    const newSlug = (rows[0] as Record<string, unknown>).slug as string | null
+    let redirectSuggestion: { from: string; to: string; type: number } | undefined
+    if (oldSlug && newSlug && oldSlug !== newSlug) {
+      redirectSuggestion = {
+        from: `/${collection.name}/${oldSlug}`,
+        to: `/${collection.name}/${newSlug}`,
+        type: 301,
+      }
+    }
+
+    return c.json({ data: rows[0], ...(redirectSuggestion ? { redirectSuggestion } : {}) })
   })
 
   // DELETE /api/:collection/:id
-  app.delete(`/${collection.name}/:id`, requireAuth, async (c) => {
+  app.delete(`/${collection.name}/:id`, requireAuth, requireScope('content:write'), async (c) => {
     const sql = getClient()
     const id = c.req.param('id')
 
@@ -262,11 +292,13 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404)
     }
 
+    dispatchWebhookEvent('content.deleted', { id, collection: collection.name }).catch(() => {})
+
     return c.json({ ok: true })
   })
 
   // POST /api/:collection/:id/publish
-  app.post(`/${collection.name}/:id/publish`, requireAuth, async (c) => {
+  app.post(`/${collection.name}/:id/publish`, requireAuth, requireScope('content:publish'), async (c) => {
     const sql = getClient()
     const id = c.req.param('id')
     const user = c.get('user')
@@ -283,11 +315,13 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404)
     }
 
+    dispatchWebhookEvent('content.published', { id, collection: collection.name, document: rows[0] }).catch(() => {})
+
     return c.json({ data: rows[0] })
   })
 
   // POST /api/:collection/:id/unpublish
-  app.post(`/${collection.name}/:id/unpublish`, requireAuth, async (c) => {
+  app.post(`/${collection.name}/:id/unpublish`, requireAuth, requireScope('content:publish'), async (c) => {
     const sql = getClient()
     const id = c.req.param('id')
     const user = c.get('user')
@@ -303,6 +337,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     if (rows.length === 0) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404)
     }
+
+    dispatchWebhookEvent('content.unpublished', { id, collection: collection.name, document: rows[0] }).catch(() => {})
 
     return c.json({ data: rows[0] })
   })

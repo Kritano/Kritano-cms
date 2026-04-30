@@ -179,15 +179,61 @@ bun astro build
 
 This produces static output in the theme's `dist/` directory. Copy it to your web root or configure nginx to serve it.
 
-## Updating
+## Updating (zero downtime)
 
-To update a running deployment:
+The admin includes an **Update Server** tab that generates a zero-downtime update script. It handles:
+
+1. `git pull` to fetch latest code
+2. `bun install` to update dependencies
+3. `bun run cms migrate` to apply new migrations (safe — only adds, never destructive)
+4. `bun run cms build` to rebuild the frontend
+5. Rolling restart — worker first, then API (the site stays up throughout)
+6. Automatic health check — rolls back if the health check fails
+
+To update manually:
 
 ```bash
 cd /var/cms
 git pull
 bun install
-bun run packages/cli/src/commands/migrate.ts    # Apply new migrations
-bun run packages/cli/src/commands/build.ts       # Rebuild admin
-systemctl restart cms-api                         # Restart API
+bun run packages/cli/src/commands/migrate.ts
+bun run packages/cli/src/commands/build.ts
+systemctl restart cms-worker
+sleep 5
+systemctl restart cms-api
+```
+
+## Backups
+
+The setup script configures daily PostgreSQL backups via cron at 02:00 UTC with 30-day retention. Backups are stored at `/var/backups/cms/`.
+
+### Managing backups in the admin
+
+The **Deployment → Backups** tab in the admin shows:
+
+- List of backup files with date and size
+- **Run backup now** button for manual backups
+- Download button for each backup
+- Restore script (copies to clipboard)
+
+### Manual backup
+
+```bash
+pg_dump -U cms cms | gzip > /var/backups/cms/cms-$(date +%Y%m%d).sql.gz
+```
+
+### Restore from backup
+
+```bash
+systemctl stop cms-api cms-worker
+gunzip -c /var/backups/cms/cms-20250601.sql.gz | psql -U cms cms
+systemctl start cms-api cms-worker
+```
+
+### API endpoints
+
+```
+GET    /api/admin/backups              List backup files
+POST   /api/admin/backups              Trigger manual backup
+GET    /api/admin/backups/:filename    Download backup file
 ```

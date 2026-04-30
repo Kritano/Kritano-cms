@@ -236,6 +236,11 @@ export function DocumentEditor({ collection, id }: Props) {
         seoValue={fields.seo}
         onSeoChange={(val) => updateField('seo', val)}
         previewUrl={previewUrl}
+        collection={collection}
+        documentId={docId || null}
+        onRestore={() => {
+          queryClient.invalidateQueries({ queryKey: ['document', collection, docId] })
+        }}
       />
     </div>
   )

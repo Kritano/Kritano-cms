@@ -31,6 +31,12 @@ async function main() {
       await build()
       break
     }
+    case 'mcp': {
+      // Start the MCP server — this is used by Claude Desktop, Cursor, etc.
+      // It reads CMS_URL and CMS_API_KEY from environment variables
+      await import('../../mcp/src/index')
+      break
+    }
     default: {
       log.header('Kritano CMS CLI')
       console.log('')
@@ -42,6 +48,7 @@ async function main() {
       console.log('    migrate:create   Generate a new migration from schema changes')
       console.log('    generate         Generate TypeScript types from config')
       console.log('    build            Build the admin UI and frontend')
+      console.log('    mcp              Start the MCP server (for Claude Desktop / Cursor)')
       console.log('')
       if (command) {
         log.error(`Unknown command: ${command}`)

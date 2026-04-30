@@ -15,6 +15,19 @@ import { Media } from '@/pages/Media'
 import { SiteSettings } from '@/pages/site/SiteSettings'
 import { SiteHealth } from '@/pages/site/SiteHealth'
 import { Deployment } from '@/pages/Deployment'
+import { UserList } from '@/pages/team/UserList'
+import { UserDetail } from '@/pages/team/UserDetail'
+import { InviteUser } from '@/pages/team/InviteUser'
+import { RoleList } from '@/pages/team/RoleList'
+import { RoleEditor } from '@/pages/team/RoleEditor'
+import { ActivityLog } from '@/pages/team/ActivityLog'
+import { AccountSecurity } from '@/pages/team/AccountSecurity'
+import { Calendar } from '@/pages/Calendar'
+import { Redirects } from '@/pages/Redirects'
+import { Webhooks } from '@/pages/Webhooks'
+import { FormList } from '@/pages/forms/FormList'
+import { FormBuilder } from '@/pages/forms/FormBuilder'
+import { FormSubmissions } from '@/pages/forms/FormSubmissions'
 
 // TODO: In future tasks, these will come from the CMS config API
 // For now, hardcode the collections from the blueprint
@@ -114,6 +127,114 @@ const deploymentRoute = createRoute({
   component: Deployment,
 })
 
+// --- Team: Users & Roles ---
+
+const usersRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/users',
+  component: UserList,
+})
+
+const inviteUserRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/users/invite',
+  component: InviteUser,
+})
+
+const userDetailRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/users/$id',
+  component: function UserDetailPage() {
+    const { id } = userDetailRoute.useParams()
+    return <UserDetail id={id} />
+  },
+})
+
+const rolesRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/roles',
+  component: RoleList,
+})
+
+const newRoleRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/roles/new',
+  component: () => <RoleEditor />,
+})
+
+const editRoleRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/roles/$id',
+  component: function EditRolePage() {
+    const { id } = editRoleRoute.useParams()
+    return <RoleEditor id={id} />
+  },
+})
+
+const activityRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/activity',
+  component: ActivityLog,
+})
+
+// --- Redirects ---
+
+const redirectsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/redirects',
+  component: Redirects,
+})
+
+const webhooksRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/webhooks',
+  component: Webhooks,
+})
+
+// --- Forms ---
+
+const formsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/forms',
+  component: FormList,
+})
+
+const newFormRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/forms/new',
+  component: () => <FormBuilder />,
+})
+
+const editFormRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/forms/$id',
+  component: function EditFormPage() {
+    const { id } = editFormRoute.useParams()
+    return <FormBuilder id={id} />
+  },
+})
+
+const formSubmissionsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/forms/$id/submissions',
+  component: function FormSubmissionsPage() {
+    const { id } = formSubmissionsRoute.useParams()
+    return <FormSubmissions formId={id} />
+  },
+})
+
+const calendarRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/calendar',
+  component: Calendar,
+})
+
+const accountSecurityRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/account/security',
+  component: AccountSecurity,
+})
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   authLayoutRoute.addChildren([
@@ -122,6 +243,23 @@ const routeTree = rootRoute.addChildren([
     siteRoute,
     siteHealthRoute,
     deploymentRoute,
+    // Team routes (must be before $collection catch-all)
+    usersRoute,
+    inviteUserRoute,
+    userDetailRoute,
+    rolesRoute,
+    newRoleRoute,
+    editRoleRoute,
+    activityRoute,
+    redirectsRoute,
+    webhooksRoute,
+    formsRoute,
+    newFormRoute,
+    editFormRoute,
+    formSubmissionsRoute,
+    calendarRoute,
+    accountSecurityRoute,
+    // Collection routes (catch-all — must be last)
     collectionListRoute,
     newDocumentRoute,
     editDocumentRoute,

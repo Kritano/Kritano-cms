@@ -6,7 +6,9 @@ Kritano CMS exposes a REST API and a GraphQL endpoint, both auto-generated from 
 
 ## Authentication
 
-Write endpoints (POST, PUT, PATCH, DELETE, publish, unpublish) require a valid JWT in the `Authorization` header. Read endpoints for published documents are public. Read endpoints for draft documents require authentication.
+Write endpoints (POST, PUT, PATCH, DELETE, publish, unpublish) require authentication via either a JWT token or an API key in the `Authorization` header. Read endpoints for published documents are public. Read endpoints for draft documents require authentication.
+
+API keys use the format `Bearer cms_live_...` — see [API keys](api-keys.md) for details.
 
 ```
 Authorization: Bearer <access-token>
@@ -540,3 +542,87 @@ Common error codes:
 | `NOT_FOUND` | 404 | Document or resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid request body |
 | `INTERNAL_ERROR` | 500 | Server error |
+| `FORBIDDEN` | 403 | Insufficient permissions or API key scope |
+
+## Phase 0.2 endpoints
+
+The following endpoints were added in v0.2. See their dedicated documentation pages for full details.
+
+### Roles and users — [docs](users-and-roles.md)
+
+```
+GET/POST/PUT/DELETE  /api/admin/roles
+GET/POST/DELETE      /api/admin/users
+POST/GET/DELETE      /api/admin/invitations
+POST                 /api/auth/accept-invitation
+POST                 /api/auth/2fa/setup | /verify | /disable | /challenge
+POST                 /api/auth/change-password
+GET                  /api/admin/activity
+```
+
+### Revision history — [docs](revisions.md)
+
+```
+GET    /api/:collection/:id/revisions
+GET    /api/:collection/:id/revisions/:revId
+POST   /api/:collection/:id/revisions/:revId/restore
+```
+
+### Scheduled publishing — [docs](scheduling.md)
+
+```
+POST   /api/:collection/:id/schedule
+GET    /api/:collection/:id/schedule
+DELETE /api/:collection/:id/schedule
+```
+
+### Webhooks — [docs](webhooks.md)
+
+```
+GET/POST/PUT/DELETE  /api/admin/webhooks
+GET                  /api/admin/webhooks/:id/deliveries
+POST                 /api/admin/webhooks/:id/test
+```
+
+### Redirects — [docs](redirects.md)
+
+```
+GET/POST/PUT/DELETE  /api/admin/redirects
+POST                 /api/admin/redirects/import
+GET                  /api/admin/redirects/export
+POST                 /api/admin/redirects/check-chains
+```
+
+### API keys — [docs](api-keys.md)
+
+```
+GET/POST/DELETE      /api/admin/api-keys
+```
+
+### Forms — [docs](forms.md)
+
+```
+GET/POST/PUT/DELETE  /api/admin/forms
+GET                  /api/admin/forms/:id/submissions
+GET                  /api/admin/forms/:id/export
+DELETE               /api/admin/forms/:id/submissions/:subId
+GET                  /api/forms/:slug              (public)
+POST                 /api/forms/:slug/submit       (public)
+GET                  /api/forms/embed.js           (public)
+GET                  /api/forms/enhance.js         (public)
+```
+
+### Media folders
+
+```
+GET/POST/PATCH/DELETE  /api/admin/media/folders
+PATCH                  /api/media/:id/folder
+GET                    /api/media/:id/usage
+```
+
+### Backups — [docs](deployment.md)
+
+```
+GET/POST               /api/admin/backups
+GET                    /api/admin/backups/:filename
+```

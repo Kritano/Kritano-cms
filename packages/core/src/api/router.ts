@@ -10,6 +10,12 @@ import { roleRoutes } from './routes/roles'
 import { userRoutes } from './routes/users'
 import { invitationRoutes } from './routes/invitations'
 import { activityRoutes } from './routes/activity'
+import { webhookRoutes } from './routes/webhooks'
+import { redirectRoutes } from './routes/redirects'
+import { apiKeyRoutes } from './routes/api-keys'
+import { formRoutes } from './routes/forms'
+import { createMediaFolderRoutes } from './routes/media-folders'
+import { backupRoutes } from './routes/backups'
 
 export function createApiRouter(config: CmsConfig): Hono {
   const api = new Hono()
@@ -26,6 +32,12 @@ export function createApiRouter(config: CmsConfig): Hono {
   api.route('/api', userRoutes)
   api.route('/api', invitationRoutes)
   api.route('/api', activityRoutes)
+  api.route('/api', webhookRoutes)
+  api.route('/api', redirectRoutes)
+  api.route('/api', apiKeyRoutes)
+  api.route('/api', formRoutes)
+  api.route('/api', createMediaFolderRoutes(config))
+  api.route('/api', backupRoutes)
 
   // Auto-generated collection routes
   for (const collection of config.collections) {

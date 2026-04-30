@@ -86,19 +86,29 @@ mediaRoutes.post('/media/upload', requireAuth, async (c) => {
   return c.json({ media: rows[0] }, 201)
 })
 
-// GET /api/media — List all media
+// GET /api/media — List all media (with optional folder filter)
 mediaRoutes.get('/media', requireAuth, async (c) => {
   const sql = getClient()
   const page = parseInt(c.req.query('page') || '1', 10)
   const limit = Math.min(parseInt(c.req.query('limit') || '20', 10), 100)
   const offset = (page - 1) * limit
+  const folderId = c.req.query('folderId')
 
-  const countResult = await sql`SELECT COUNT(*) as total FROM media`
+  let countResult
+  let rows
+  if (folderId === 'null') {
+    // Root level — no folder
+    countResult = await sql`SELECT COUNT(*)::int as total FROM media WHERE folder_id IS NULL`
+    rows = await sql`SELECT * FROM media WHERE folder_id IS NULL ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`
+  } else if (folderId) {
+    countResult = await sql`SELECT COUNT(*)::int as total FROM media WHERE folder_id = ${folderId}`
+    rows = await sql`SELECT * FROM media WHERE folder_id = ${folderId} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`
+  } else {
+    // All media
+    countResult = await sql`SELECT COUNT(*)::int as total FROM media`
+    rows = await sql`SELECT * FROM media ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`
+  }
   const total = parseInt((countResult[0] as Record<string, unknown>).total as string, 10)
-
-  const rows = await sql`
-    SELECT * FROM media ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
-  `
 
   return c.json({
     data: rows,

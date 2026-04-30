@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { PublishPanel } from './PublishPanel'
 import { SeoPanel } from './SeoPanel'
+import { HistoryPanel } from './HistoryPanel'
 
 interface Props {
   status: string
@@ -15,15 +16,20 @@ interface Props {
   seoValue: any
   onSeoChange: (value: any) => void
   previewUrl?: string | null
+  // Revision history props
+  collection?: string
+  documentId?: string | null
+  onRestore?: () => void
 }
 
-type Tab = 'publish' | 'seo'
+type Tab = 'publish' | 'seo' | 'history'
 
 export function EditorSidebar(props: Props) {
   const [tab, setTab] = useState<Tab>('publish')
   const tabs: { value: Tab; label: string }[] = [
     { value: 'publish', label: 'Publish' },
     ...(props.hasSeo ? [{ value: 'seo' as Tab, label: 'SEO' }] : []),
+    ...(props.documentId ? [{ value: 'history' as Tab, label: 'History' }] : []),
   ]
 
   return (
@@ -57,10 +63,19 @@ export function EditorSidebar(props: Props) {
             onUnpublish={props.onUnpublish}
             loading={props.publishLoading}
             previewUrl={props.previewUrl}
+            collection={props.collection}
+            documentId={props.documentId}
           />
         )}
         {tab === 'seo' && props.hasSeo && (
           <SeoPanel value={props.seoValue} onChange={props.onSeoChange} />
+        )}
+        {tab === 'history' && props.collection && props.documentId && (
+          <HistoryPanel
+            collection={props.collection}
+            documentId={props.documentId}
+            onRestore={props.onRestore || (() => {})}
+          />
         )}
       </div>
     </div>

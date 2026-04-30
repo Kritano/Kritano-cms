@@ -55,7 +55,7 @@ export {
 // API server
 export { createServer, startServer } from './api/server'
 export { createApiRouter } from './api/router'
-export { requireAuth, optionalAuth, signToken, signRefreshToken, verifyToken } from './api/middleware/auth'
+export { requireAuth, optionalAuth, requireScope, signToken, signRefreshToken, verifyToken } from './api/middleware/auth'
 export { requirePermission } from './api/middleware/permission'
 export { createCollectionRoutes } from './api/routes/collection'
 export { buildGraphQLSchema } from './api/graphql/schema-builder'
@@ -66,6 +66,10 @@ export { createRevision } from './lib/revisions'
 
 // Scheduler
 export { getScheduleQueue, startScheduleWorker, closeScheduler } from './lib/scheduler'
+
+// Webhooks
+export { dispatchWebhookEvent, startWebhookWorker, closeWebhookWorker } from './lib/webhooks'
+export type { WebhookEvent, WebhookPayload } from './lib/webhooks'
 
 // Permissions & activity
 export { getUserRoles, checkPermission } from './lib/permissions'

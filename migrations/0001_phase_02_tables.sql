@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   "name" varchar(255) NOT NULL,
   "key_hash" varchar(255) NOT NULL UNIQUE,
-  "key_prefix" varchar(10) NOT NULL,
+  "key_prefix" varchar(20) NOT NULL,
   "permissions" jsonb NOT NULL DEFAULT '[]',
   "last_used" timestamptz,
   "expires_at" timestamptz,
