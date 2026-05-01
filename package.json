@@ -1,9 +1,22 @@
 {
-  "name": "kritano-cms",
+  "name": "@kritano/cms",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
+  "bin": {
+    "cms": "./packages/cli/src/index.ts"
+  },
+  "exports": {
+    "./core": "./packages/core/src/index.ts",
+    "./admin": "./packages/admin/src/main.tsx",
+    "./astro": "./packages/astro/src/index.ts",
+    "./sdk": "./packages/sdk/src/index.ts",
+    "./cli": "./packages/cli/src/index.ts",
+    "./types": "./packages/types/src/index.ts",
+    "./mcp": "./packages/mcp/src/index.ts"
+  },
   "scripts": {
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter '*' typecheck"
