@@ -5,6 +5,7 @@ interface FormValues {
   email: string
   os: string
   size: string
+  includeTypesense: boolean
 }
 
 const PG_CONFIG: Record<string, { max_connections: number; shared_buffers: string }> = {
@@ -25,6 +26,41 @@ export function generateScript(v: FormValues): string {
   const jwtSecret = crypto.randomUUID() + crypto.randomUUID()
   const dbPassword = crypto.randomUUID().replace(/-/g, '')
 
+  const typesenseBlock = v.includeTypesense ? `
+# ─── Typesense ──────────────────────────────────────────────────────
+echo "==> Installing Typesense"
+curl -O https://dl.typesense.org/releases/26.0/typesense-server-26.0-amd64.deb
+apt install -y ./typesense-server-26.0-amd64.deb
+rm -f typesense-server-26.0-amd64.deb
+
+# Generate a secure API key
+TYPESENSE_API_KEY=$(openssl rand -hex 32)
+
+# Configure Typesense
+cat > /etc/typesense/typesense-server.ini << TSCONF
+[server]
+api-key = $TYPESENSE_API_KEY
+data-dir = /var/lib/typesense
+log-dir = /var/log/typesense
+api-port = 8108
+TSCONF
+
+# Start and enable Typesense
+systemctl start typesense-server
+systemctl enable typesense-server
+` : ''
+
+  const typesenseEnv = v.includeTypesense ? `
+TYPESENSE_HOST=localhost
+TYPESENSE_PORT=8108
+TYPESENSE_PROTOCOL=http
+TYPESENSE_API_KEY=$TYPESENSE_API_KEY` : ''
+
+  const typesenseSync = v.includeTypesense ? `
+echo "==> Syncing search indexes"
+bun run cms search:sync
+` : ''
+
   return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -33,6 +69,7 @@ set -euo pipefail
 # Domain:  ${v.domain}
 # OS:      ${v.os}
 # Size:    ${v.size}
+# Search:  ${v.includeTypesense ? 'Typesense' : 'None'}
 # Generated: ${new Date().toISOString()}
 # ──────────────────────────────────────────────────────────────────────
 
@@ -70,7 +107,7 @@ apt install -y redis-server
 sed -i "s/^# maxmemory .*/maxmemory ${redisMem}/" /etc/redis/redis.conf
 sed -i "s/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/" /etc/redis/redis.conf
 systemctl restart redis-server
-
+${typesenseBlock}
 # ─── CMS ──────────────────────────────────────────────────────────────
 echo "==> Cloning CMS"
 git clone https://github.com/kritano/cms.git /var/cms
@@ -85,7 +122,7 @@ JWT_SECRET=${jwtSecret}
 MEDIA_PATH=/var/cms/media
 SITE_URL=https://${v.domain}
 ADMIN_URL=https://${v.domain}/admin
-NODE_ENV=production
+NODE_ENV=production${typesenseEnv}
 ENV
 
 mkdir -p /var/cms/media
@@ -95,7 +132,7 @@ bun run cms migrate
 
 echo "==> Building"
 bun run cms build
-
+${typesenseSync}
 # ─── nginx ────────────────────────────────────────────────────────────
 echo "==> Configuring nginx"
 cat > /etc/nginx/sites-available/${v.domain} << 'NGINX'

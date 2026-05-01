@@ -19,6 +19,7 @@ export function AccountSecurity() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">Account Security</h1>
       <ChangePasswordSection />
+      <ConnectedAccountsSection />
       <TwoFactorSection
         enabled={twoFactorEnabled}
         onUpdate={() => queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })}
@@ -203,6 +204,82 @@ function TwoFactorSection({ enabled, onUpdate }: { enabled: boolean; onUpdate: (
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function ConnectedAccountsSection() {
+  const queryClient = useQueryClient()
+  const [error, setError] = useState('')
+
+  const { data: providersData } = useQuery({
+    queryKey: ['oauth-providers'],
+    queryFn: () => api<{ providers: string[] }>('/auth/oauth/providers', { auth: false }),
+  })
+
+  const { data: accountsData } = useQuery({
+    queryKey: ['oauth-accounts'],
+    queryFn: () => api<{ data: Array<{ provider: string; email: string; created_at: string }> }>('/auth/oauth/accounts'),
+  })
+
+  const unlinkMutation = useMutation({
+    mutationFn: (provider: string) =>
+      api(`/auth/oauth/${provider}/unlink`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['oauth-accounts'] })
+      setError('')
+    },
+    onError: (err: any) => setError(err.message || 'Failed to disconnect'),
+  })
+
+  const availableProviders = providersData?.providers ?? []
+  const linkedAccounts = accountsData?.data ?? []
+
+  // Only show if at least one provider is configured
+  if (availableProviders.length === 0) return null
+
+  const providerLabels: Record<string, string> = { google: 'Google', github: 'GitHub' }
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <h2 className="mb-4 text-lg font-medium text-gray-900">Connected Accounts</h2>
+      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+
+      <div className="space-y-3">
+        {availableProviders.map((provider) => {
+          const linked = linkedAccounts.find((a) => a.provider === provider)
+          return (
+            <div key={provider} className="flex items-center justify-between rounded-md border border-gray-100 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-900">{providerLabels[provider] || provider}</span>
+                {linked ? (
+                  <span className="text-sm text-gray-500">connected as {linked.email}</span>
+                ) : (
+                  <span className="text-sm text-gray-400">not connected</span>
+                )}
+              </div>
+              {linked ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => unlinkMutation.mutate(provider)}
+                  disabled={unlinkMutation.isPending}
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => { window.location.href = `/api/auth/oauth/${provider}` }}
+                >
+                  Connect
+                </Button>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

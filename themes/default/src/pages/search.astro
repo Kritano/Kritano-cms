@@ -1,0 +1,137 @@
+---
+import Base from '../../layouts/Base.astro'
+import { fetchAPI } from '../lib/api'
+
+const query = Astro.url.searchParams.get('q') || ''
+let results: Record<string, { total: number; hits: any[] }> = {}
+let tookMs = 0
+let searchUnavailable = false
+
+if (query) {
+  try {
+    const data = await fetchAPI<any>(`/search?q=${encodeURIComponent(query)}&limit=10`)
+    results = data.results || {}
+    tookMs = data.took_ms || 0
+    searchUnavailable = data.search_unavailable || false
+  } catch {}
+}
+
+const totalHits = Object.values(results).reduce((sum, r) => sum + r.total, 0)
+---
+<Base title={query ? `Search: ${query}` : 'Search'}>
+  <section class="section">
+    <h1>Search</h1>
+
+    <form action="/search" method="get" class="search-form">
+      <input
+        type="search"
+        name="q"
+        value={query}
+        placeholder="Search articles, pages, projects..."
+        autocomplete="off"
+        class="search-input"
+      />
+      <button type="submit" class="search-button">Search</button>
+    </form>
+
+    {searchUnavailable && (
+      <p class="search-unavailable">Search is currently unavailable. Please try again later.</p>
+    )}
+
+    {query && !searchUnavailable && totalHits === 0 && (
+      <p class="search-empty">No results found for &ldquo;{query}&rdquo;</p>
+    )}
+
+    {query && totalHits > 0 && (
+      <p class="search-meta">{totalHits} result{totalHits !== 1 ? 's' : ''} for &ldquo;{query}&rdquo; ({tookMs}ms)</p>
+    )}
+
+    {Object.entries(results).map(([collection, data]) => {
+      if (data.hits.length === 0) return null
+      return (
+        <div class="search-collection">
+          <h2 class="search-collection-title">{collection}s</h2>
+          <div class="list">
+            {data.hits.map((hit: any) => (
+              <a href={`/${collection}/${hit.slug || hit.id}`} class="list-item">
+                <h3>{hit.title}</h3>
+                {hit.excerpt && <p class="excerpt" set:html={hit.excerpt} />}
+                {hit.publishedAt && (
+                  <time class="meta">{new Date(hit.publishedAt).toLocaleDateString()}</time>
+                )}
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    })}
+  </section>
+</Base>
+
+<style>
+  .search-form {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  .search-input {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    background: var(--surface, #fff);
+    color: var(--text, #111);
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent, #2563eb);
+    box-shadow: 0 0 0 2px var(--accent-light, rgba(37, 99, 235, 0.15));
+  }
+  .search-button {
+    padding: 0.625rem 1.25rem;
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .search-meta {
+    color: var(--text-muted, #6b7280);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+  .search-empty {
+    color: var(--text-muted, #6b7280);
+    font-size: 1rem;
+    margin: 2rem 0;
+  }
+  .search-unavailable {
+    color: var(--text-muted, #6b7280);
+    font-size: 1rem;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--surface-alt, #f9fafb);
+    border-radius: 0.5rem;
+  }
+  .search-collection {
+    margin-bottom: 2rem;
+  }
+  .search-collection-title {
+    font-size: 1.125rem;
+    text-transform: capitalize;
+    margin-bottom: 0.75rem;
+  }
+  .excerpt {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    margin-top: 0.25rem;
+  }
+  .excerpt :global(mark) {
+    background: var(--highlight, #fef08a);
+    padding: 0 0.125rem;
+    border-radius: 0.125rem;
+  }
+</style>

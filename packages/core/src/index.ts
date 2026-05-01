@@ -76,3 +76,36 @@ export { getUserRoles, checkPermission } from './lib/permissions'
 export type { Permissions, RoleWithPermissions } from './lib/permissions'
 export { logActivity } from './lib/activity-logger'
 export type { ActivityLogEntry } from './lib/activity-logger'
+
+// Update checker
+export { checkForUpdates, getCachedUpdateCheck, dismissUpdate, isUpdateDismissed } from './lib/update-checker'
+export type { UpdateCheckResult } from './lib/update-checker'
+
+// Search (Typesense)
+export {
+  getSearchClient,
+  isSearchAvailable,
+  checkSearchHealth,
+  syncSchemas,
+  upsertDocument,
+  deleteDocument,
+  reindexCollection,
+  clearCollection,
+  searchCollections,
+  searchSuggest,
+  extractText,
+  type SearchParams,
+  type SearchHit,
+  type CollectionSearchResult,
+  type GlobalSearchResult,
+  type SuggestResult,
+} from './search'
+
+// Plugin system
+export { definePlugin } from './plugins/definePlugin'
+export { loadPlugins, fireReadyHook, dispatchPluginHook } from './plugins/loader'
+export { PluginRegistry, getPluginRegistry, resetPluginRegistry } from './plugins/registry'
+export { createPluginContext, createRestrictedContext } from './plugins/context'
+export { checkConflicts } from './plugins/conflict'
+export { resolveLoadOrder, checkVersionCompatibility } from './plugins/deps'
+export { createSandboxedPlugin, isIsolatedVmAvailable } from './plugins/sandbox'

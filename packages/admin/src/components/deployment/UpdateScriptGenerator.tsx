@@ -2,9 +2,15 @@ interface FormValues {
   serverIp: string
   sshUser: string
   domain: string
+  includeTypesense: boolean
 }
 
 export function generateUpdateScript(v: FormValues): string {
+  const typesenseSync = v.includeTypesense ? `
+echo "==> Re-syncing search indexes"
+bun run cms search:sync
+` : ''
+
   return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -27,7 +33,7 @@ bun run cms migrate
 
 echo "==> Rebuilding frontend"
 bun run cms build
-
+${typesenseSync}
 echo "==> Rolling restart (zero downtime)"
 # Restart worker first — API stays up during worker restart
 systemctl restart cms-worker

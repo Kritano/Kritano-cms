@@ -9,7 +9,7 @@ export interface Page extends Document {
   body: Record<string, unknown>
   content: import("@cms/types").Block[]
   featuredImage: string | null
-  status: string
+  status: import("@cms/types").DocumentStatus
   seo: import("@cms/types").SeoBlock | null
 }
 
@@ -21,7 +21,7 @@ export interface Article extends Document {
   tags: unknown[]
   featuredImage: string | null
   publishedAt: string | null
-  status: string
+  status: import("@cms/types").DocumentStatus
   seo: import("@cms/types").SeoBlock | null
 }
 
@@ -32,7 +32,7 @@ export interface Project extends Document {
   url: string | null
   tags: unknown[]
   images: unknown[]
-  status: string
+  status: import("@cms/types").DocumentStatus
   seo: import("@cms/types").SeoBlock | null
 }
 

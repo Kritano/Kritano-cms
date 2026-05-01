@@ -87,7 +87,8 @@ const articles = await cms.collection('article').findMany({
 | Admin UI | React 19 + TanStack Router/Query + Tailwind CSS |
 | Editor | [TipTap](https://tiptap.dev) (Visual, Markdown, Split modes) |
 | Frontend | [Astro](https://astro.build) (zero JS by default) |
-| Auth | JWT (email + password for v0.1) |
+| Auth | JWT + OAuth (Google, GitHub) |
+| Search | [Typesense](https://typesense.org) (typo-tolerant full-text) |
 | Media | [Sharp](https://sharp.pixelplumbing.com) (auto WebP + thumbnails) |
 | Content API | REST + [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) |
 
@@ -105,8 +106,13 @@ const articles = await cms.collection('article').findMany({
 - **Redirects** — 301/302 with hit tracking, chain detection, CSV import/export
 - **API keys** — scoped access for headless frontends and integrations
 - **MCP server** — connect Claude Desktop or Cursor to manage content via AI
+- **Plugin system** — extensible plugin API with hooks, routes, admin UI injection, custom fields, trust tiers, sandboxing
+- **Full-text search** — Typesense-powered, auto-synced on publish, Cmd+K in admin, zero-JS Astro component
+- **OAuth login** — Google and GitHub alongside email/password, linked accounts management
+- **Live preview** — signed preview tokens, draft content rendering, works with any frontend framework
+- **Update notifications** — check for new CMS versions, copy-paste update commands
 - **Site health** — Kritano integration for SEO, accessibility, and performance scoring
-- **Deployment** — setup script, zero-downtime update script, backup management
+- **Deployment** — setup script with optional Typesense, zero-downtime update script, backup management
 
 ## Field types
 
@@ -133,6 +139,12 @@ All fields are chainable: `text().required().min(3).max(100)`
 | Webhooks | [docs/webhooks.md](docs/webhooks.md) |
 | API keys | [docs/api-keys.md](docs/api-keys.md) |
 | MCP server | [docs/mcp.md](docs/mcp.md) |
+| Plugins | [docs/plugins/using-plugins.md](docs/plugins/using-plugins.md) |
+| Building plugins | [docs/plugins/building-plugins.md](docs/plugins/building-plugins.md) |
+| Plugin security | [docs/plugins/security.md](docs/plugins/security.md) |
+| Search | [docs/search.md](docs/search.md) |
+| OAuth | [docs/oauth.md](docs/oauth.md) |
+| Live preview | [docs/preview.md](docs/preview.md) |
 
 ## Project structure
 

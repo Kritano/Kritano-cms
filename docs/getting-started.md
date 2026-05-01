@@ -199,6 +199,10 @@ Kritano CMS has a built-in MCP server that lets Claude Desktop and Cursor manage
 - [API reference](api.md) — full REST and GraphQL documentation
 - [Themes](themes.md) — build an Astro theme for your frontend
 - [Deployment](deployment.md) — deploy to a production server
+- [Plugins](plugins/using-plugins.md) — extend the CMS with plugins
+- [Search](search.md) — full-text search with Typesense
+- [OAuth](oauth.md) — Google and GitHub login
+- [Live preview](preview.md) — preview draft content on your site
 - [Kritano integration](kritano.md) — site health scoring
 - [Users and roles](users-and-roles.md) — team management, permissions, 2FA
 - [Revision history](revisions.md) — document versioning and restore

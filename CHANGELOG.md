@@ -4,6 +4,51 @@ All notable changes to Kritano CMS are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] — 2026-05-01
+
+### Added
+
+- **Plugin system** — ESM plugin API with hooks, API routes, admin UI injection, custom fields, custom collections, GraphQL extension, job registration. `definePlugin()` factory, `PluginContext` with full and restricted API surfaces.
+- **Plugin trust tiers** — trusted (in-process) and sandboxed (isolated-vm). Official `@cms-plugin/*` packages are trusted by default, community plugins sandboxed.
+- **Plugin sandboxing** via isolated-vm — community plugins run in isolated V8 contexts with 128MB memory limits and restricted API surface.
+- **Graceful sandbox fallback** — CMS starts with warning if isolated-vm native addon is unavailable. Sandboxed plugins run in-process with restricted context.
+- **Conflict detection** — hard startup errors for route, field type, collection, and admin section conflicts across plugins. CMS will not start with conflicts.
+- **Hook execution order** — plugins can declare `order` priority on hook subscriptions (lower runs first, default 100).
+- **Plugin dependency declarations** — `requires` field in plugin manifest. Missing dependencies skip the dependent plugin with a clear log message.
+- **Plugin version compatibility** — `cms.minVersion` / `maxVersion` checked on install and startup. Warnings logged, CMS starts regardless.
+- **Plugin manager in admin UI** — trust tier badges (Official, Trusted, Sandboxed, Local), version warnings, enable/disable toggle, detail panel with hooks/routes/collections info.
+- **CLI plugin commands** — `plugin:install` (with dependency prompts and version checks), `plugin:remove` (with dependent plugin warnings), `plugin:list` (with trust and version status), `plugin:enable`, `plugin:disable`.
+- **Full-text search** powered by Typesense — zero config, auto-synced on publish. Field type mapping (text → string, richText → plain text extraction, datetime → int64, select → facet).
+- **Global search in admin** (Cmd+K / Ctrl+K) — searches across all collections with 200ms debounce, results grouped by collection, keyboard navigation, skeleton loading.
+- **Search component for Astro frontends** — `renderSearchForm()` produces plain HTML form (zero JS). Optional `enhance` mode adds defer-loaded <5kb script for live search-as-you-type.
+- **Search results page** in default Astro theme at `/search`.
+- **Search SDK methods** — `cms.search.search()` (global), `cms.collection().search()` (scoped), `cms.search.suggest()` (autocomplete).
+- **Search API endpoints** — `GET /api/search`, `GET /api/search/:collection`, `GET /api/search/suggest`. Published content is public, drafts require auth.
+- **OAuth login** — Google and GitHub. Buttons only appear when env vars configured. Auto-links OAuth to existing user by email. Creates new user if no match.
+- **Linked accounts management** in Account Security — connect/disconnect providers, cannot unlink last login method.
+- **Live preview protocol** — signed preview tokens (JWT, 2h expiry), draft content serving. Framework-agnostic: any frontend reads `cms_preview` query param.
+- **Preview mode in @cms/astro** — `getPreviewToken()`, `getPreviewBannerHtml()`, `getCMSClient(previewToken)`.
+- **Preview button** in document editor publish panel — generates token, opens preview URL in new tab.
+- **SDK preview support** — `CMSClient` accepts `previewToken` option, `CollectionClient.findPreview()` method.
+- **CMS update notifications** — checks GitHub API (development mode) or npm registry (release mode). Dashboard banner with dismiss (7 days per user). Deployment → Updates tab with version info, recent commits, copy-pasteable update commands.
+- **Typesense added to deployment script generator** — optional radio toggle on Initial Setup, checkbox on Update Server. Installs Typesense 26.0, generates API key, configures service, syncs indexes.
+- `cms search:sync` and `cms search:clear` CLI commands.
+- 6 new documentation pages — plugins (using, building, security), search, OAuth, live preview.
+- CHANGELOG.md.
+
+### Changed
+
+- `CmsConfig` type now accepts optional `plugins` array.
+- `defineConfig()` accepts `plugins` option.
+- `createServer()` loads plugins on startup, fires `cms.ready` hook.
+- `startServer()` is now async.
+- Collection routes index documents in Typesense on publish, remove on unpublish/delete.
+- Admin sidebar shows numbered badge on Deployment when CMS updates are available.
+- Publish panel shows separate View (published) and Preview (draft) buttons.
+- SDK `CMSClient` constructor accepts `previewToken` option.
+- SDK `CollectionClient` has `search()` and `findPreview()` methods.
+- `@cms/astro` `getCMSClient()` accepts optional preview token parameter.
+
 ## [0.2.0] — 2026-04-30
 
 ### Added

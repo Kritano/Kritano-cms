@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ExternalLink, Calendar, X } from 'lucide-react'
+import { ExternalLink, Eye, Calendar, X } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -124,7 +124,7 @@ export function PublishPanel({
                 {loading ? 'Unpublishing…' : 'Unpublish'}
               </Button>
             )}
-            {previewUrl && (
+            {previewUrl && status === 'published' && (
               <a
                 href={previewUrl}
                 target="_blank"
@@ -134,6 +134,24 @@ export function PublishPanel({
                 <ExternalLink size={14} />
                 View
               </a>
+            )}
+            {previewUrl && documentId && (
+              <button
+                onClick={async () => {
+                  try {
+                    const data = await api<{ token: string }>('/preview/token', {
+                      method: 'POST',
+                      body: { documentId, collection },
+                    })
+                    const url = `${previewUrl}?cms_preview=${data.token}`
+                    window.open(url, '_blank')
+                  } catch {}
+                }}
+                className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Eye size={14} />
+                Preview
+              </button>
             )}
           </div>
 

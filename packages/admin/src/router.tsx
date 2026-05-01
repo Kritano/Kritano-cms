@@ -23,6 +23,8 @@ import { RoleEditor } from '@/pages/team/RoleEditor'
 import { ActivityLog } from '@/pages/team/ActivityLog'
 import { AccountSecurity } from '@/pages/team/AccountSecurity'
 import { Calendar } from '@/pages/Calendar'
+import { ApiKeys } from '@/pages/ApiKeys'
+import { PluginManager } from '@/pages/PluginManager'
 import { Redirects } from '@/pages/Redirects'
 import { Webhooks } from '@/pages/Webhooks'
 import { FormList } from '@/pages/forms/FormList'
@@ -229,6 +231,18 @@ const calendarRoute = createRoute({
   component: Calendar,
 })
 
+const apiKeysRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/api-keys',
+  component: ApiKeys,
+})
+
+const pluginsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/plugins',
+  component: PluginManager,
+})
+
 const accountSecurityRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: '/admin/account/security',
@@ -258,6 +272,8 @@ const routeTree = rootRoute.addChildren([
     editFormRoute,
     formSubmissionsRoute,
     calendarRoute,
+    apiKeysRoute,
+    pluginsRoute,
     accountSecurityRoute,
     // Collection routes (catch-all — must be last)
     collectionListRoute,

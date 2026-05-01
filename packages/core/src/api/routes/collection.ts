@@ -8,6 +8,7 @@ import { createRevision } from '../../lib/revisions'
 import { getScheduleQueue, type ScheduleJobData } from '../../lib/scheduler'
 import { fromZonedTime } from 'date-fns-tz'
 import { dispatchWebhookEvent } from '../../lib/webhooks'
+import { upsertDocument, deleteDocument } from '../../search/indexer'
 
 const JSONB_TYPES = new Set(['richText', 'seoBlock', 'blocks', 'multiSelect', 'array'])
 
@@ -293,6 +294,7 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     }
 
     dispatchWebhookEvent('content.deleted', { id, collection: collection.name }).catch(() => {})
+    deleteDocument(collection.name, id).catch(() => {})
 
     return c.json({ ok: true })
   })
@@ -316,6 +318,7 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     }
 
     dispatchWebhookEvent('content.published', { id, collection: collection.name, document: rows[0] }).catch(() => {})
+    upsertDocument(collection.name, rows[0] as Record<string, unknown>, collection.fields).catch(() => {})
 
     return c.json({ data: rows[0] })
   })
@@ -339,6 +342,7 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     }
 
     dispatchWebhookEvent('content.unpublished', { id, collection: collection.name, document: rows[0] }).catch(() => {})
+    deleteDocument(collection.name, id).catch(() => {})
 
     return c.json({ data: rows[0] })
   })

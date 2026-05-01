@@ -620,6 +620,53 @@ PATCH                  /api/media/:id/folder
 GET                    /api/media/:id/usage
 ```
 
+### Search — [docs](search.md)
+
+```
+GET                    /api/search                      Global search
+GET                    /api/search/:collection           Collection-scoped search
+GET                    /api/search/suggest               Autocomplete suggestions
+```
+
+### Preview — [docs](preview.md)
+
+```
+POST                   /api/preview/token                Generate preview token
+GET                    /api/preview/validate              Validate preview token
+GET                    /api/:collection/:id/preview       Get draft content via preview token
+```
+
+### OAuth — [docs](oauth.md)
+
+```
+GET                    /api/auth/oauth/providers          List configured providers
+GET                    /api/auth/oauth/:provider          Start OAuth flow
+GET                    /api/auth/oauth/:provider/callback  OAuth callback
+POST                   /api/auth/oauth/link               Link provider to account
+DELETE                 /api/auth/oauth/:provider/unlink   Unlink provider
+GET                    /api/auth/oauth/accounts           List linked accounts
+```
+
+### Plugins — [docs](plugins/using-plugins.md)
+
+```
+GET                    /api/admin/plugins                 List installed plugins
+GET                    /api/admin/plugins/registry        Plugin UI registry
+GET                    /api/admin/plugins/:name           Plugin detail
+PATCH                  /api/admin/plugins/:name/settings  Update plugin settings
+POST                   /api/admin/plugins/:name/enable    Enable plugin
+POST                   /api/admin/plugins/:name/disable   Disable plugin
+DELETE                 /api/admin/plugins/:name           Uninstall plugin
+```
+
+### Updates
+
+```
+GET                    /api/admin/updates/check           Check for CMS updates
+POST                   /api/admin/updates/refresh         Force fresh update check
+POST                   /api/admin/updates/dismiss         Dismiss notification (7 days)
+```
+
 ### Backups — [docs](deployment.md)
 
 ```

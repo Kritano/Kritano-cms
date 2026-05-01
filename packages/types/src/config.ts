@@ -1,4 +1,5 @@
 import type { CollectionDefinition } from './collection'
+import type { PluginConfigEntry } from './plugin'
 
 export interface SiteConfig {
   name: string
@@ -9,6 +10,7 @@ export interface SiteConfig {
 export interface CmsConfig {
   site: SiteConfig
   collections: CollectionDefinition[]
+  plugins?: PluginConfigEntry[]
 }
 
 // ── Theme Config ─────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { UpdateBanner } from '@/components/UpdateBanner'
 
 interface DashboardProps {
   collections: string[]
@@ -9,6 +10,8 @@ interface DashboardProps {
 export function Dashboard({ collections }: DashboardProps) {
   return (
     <div className="space-y-6">
+      <UpdateBanner />
+
       <div>
         <h2 className="text-lg font-semibold text-gray-900">Welcome back</h2>
         <p className="text-sm text-gray-500">Manage your content below.</p>

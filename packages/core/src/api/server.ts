@@ -9,6 +9,9 @@ import { buildResolvers } from './graphql/resolvers'
 import { startScheduleWorker } from '../lib/scheduler'
 import { startWebhookWorker } from '../lib/webhooks'
 import { redirectMiddleware } from './middleware/redirects'
+import { loadPlugins, fireReadyHook } from '../plugins/loader'
+import { getPluginRegistry } from '../plugins/registry'
+import { isSearchAvailable, syncSchemas } from '../search'
 
 export function createServer(config: CmsConfig): Hono {
   const app = new Hono()
@@ -40,8 +43,17 @@ export function createServer(config: CmsConfig): Hono {
   return app
 }
 
-export function startServer(config: CmsConfig, port = 3000): void {
+export async function startServer(config: CmsConfig, port = 3000): Promise<void> {
   const app = createServer(config)
+
+  // Load plugins — this registers routes, hooks, and extensions
+  if (config.plugins && config.plugins.length > 0) {
+    const result = await loadPlugins(config, app)
+    if (!result.success) {
+      console.error('[CMS] Server cannot start due to plugin conflicts.')
+      process.exit(1)
+    }
+  }
 
   // Start background workers
   startScheduleWorker()
@@ -52,8 +64,25 @@ export function startServer(config: CmsConfig, port = 3000): void {
   console.log(`  GraphQL:  http://localhost:${port}/api/graphql`)
   console.log(`  Health:   http://localhost:${port}/api/health`)
 
+  // Sync search schemas if Typesense is available
+  if (isSearchAvailable()) {
+    syncSchemas(config).then((result) => {
+      if (result.synced.length > 0) {
+        console.log(`[Search] Schemas synced: ${result.synced.join(', ')}`)
+      }
+      for (const err of result.errors) {
+        console.warn(`[Search] ${err}`)
+      }
+    }).catch((err) => {
+      console.warn(`[Search] Schema sync failed: ${err.message}`)
+    })
+  }
+
   Bun.serve({
     fetch: app.fetch,
     port,
   })
+
+  // Fire cms.ready hook after server is listening
+  await fireReadyHook()
 }

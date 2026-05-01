@@ -60,6 +60,38 @@ export type {
 } from './seo'
 
 export type {
+  PluginTrust,
+  PluginVersionConstraint,
+  PluginDefinition,
+  PluginHookEvent,
+  PluginHookOptions,
+  PluginHookHandler,
+  HookContext,
+  PluginHooksAPI,
+  PluginApiAPI,
+  PluginRouteHandler,
+  AdminSection,
+  EditorTab,
+  DashboardWidget,
+  SettingsPage,
+  PluginAdminAPI,
+  PluginFieldsAPI,
+  PluginCollectionsAPI,
+  PluginSchemaAPI,
+  PluginJobOptions,
+  PluginJobsAPI,
+  PluginConfigAPI,
+  PluginStorageAPI,
+  PluginCmsServices,
+  PluginContext,
+  RestrictedPluginContext,
+  PluginConfigOverride,
+  PluginConfigEntry,
+  LoadedPlugin,
+  ConflictResult,
+} from './plugin'
+
+export type {
   SiteConfig,
   CmsConfig,
   ThemeSettingType,

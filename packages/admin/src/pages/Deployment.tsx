@@ -7,9 +7,9 @@ import { generateScript } from '@/components/deployment/ScriptGenerator'
 import { generateUpdateScript } from '@/components/deployment/UpdateScriptGenerator'
 import { ScriptOutput } from '@/components/deployment/ScriptOutput'
 import { api } from '@/lib/api'
-import { Download, RotateCcw, Database, HardDrive } from 'lucide-react'
+import { Download, RotateCcw, Database, HardDrive, Copy, ExternalLink, AlertTriangle, RefreshCw } from 'lucide-react'
 
-type Tab = 'setup' | 'update' | 'backups'
+type Tab = 'setup' | 'update' | 'backups' | 'updates'
 
 interface Backup {
   filename: string
@@ -35,6 +35,7 @@ export function Deployment() {
   const tabs: { value: Tab; label: string }[] = [
     { value: 'setup', label: 'Initial Setup' },
     { value: 'update', label: 'Update Server' },
+    { value: 'updates', label: 'Updates' },
     { value: 'backups', label: 'Backups' },
   ]
 
@@ -61,6 +62,7 @@ export function Deployment() {
 
       {tab === 'setup' && <InitialSetupTab />}
       {tab === 'update' && <UpdateTab />}
+      {tab === 'updates' && <CmsUpdatesTab />}
       {tab === 'backups' && <BackupsTab />}
     </div>
   )
@@ -73,6 +75,7 @@ function InitialSetupTab() {
   const [email, setEmail] = useState('')
   const [os, setOs] = useState('ubuntu-24.04')
   const [size, setSize] = useState('small')
+  const [includeTypesense, setIncludeTypesense] = useState(true)
   const [script, setScript] = useState<string | null>(null)
 
   const canGenerate = serverIp && domain && email
@@ -103,7 +106,21 @@ function InitialSetupTab() {
           </select>
         </div>
 
-        <Button onClick={() => setScript(generateScript({ serverIp, sshUser, domain, email, os, size }))} disabled={!canGenerate} className="w-full">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-gray-700">Include full-text search (Typesense)</label>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="typesense" checked={includeTypesense} onChange={() => setIncludeTypesense(true)} className="h-4 w-4 text-gray-900" />
+              <span className="text-sm text-gray-700">Yes — install Typesense on this server (recommended)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="typesense" checked={!includeTypesense} onChange={() => setIncludeTypesense(false)} className="h-4 w-4 text-gray-900" />
+              <span className="text-sm text-gray-700">No — I'll configure search separately</span>
+            </label>
+          </div>
+        </div>
+
+        <Button onClick={() => setScript(generateScript({ serverIp, sshUser, domain, email, os, size, includeTypesense }))} disabled={!canGenerate} className="w-full">
           Generate Setup Script
         </Button>
       </div>
@@ -116,6 +133,7 @@ function UpdateTab() {
   const [serverIp, setServerIp] = useState('')
   const [sshUser, setSshUser] = useState('root')
   const [domain, setDomain] = useState('')
+  const [includeTypesense, setIncludeTypesense] = useState(true)
   const [script, setScript] = useState<string | null>(null)
 
   const canGenerate = serverIp && domain
@@ -130,12 +148,206 @@ function UpdateTab() {
         <Input label="SSH user" value={sshUser} onChange={(e) => setSshUser(e.target.value)} />
         <Input label="Domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="mysite.com" />
 
-        <Button onClick={() => setScript(generateUpdateScript({ serverIp, sshUser, domain }))} disabled={!canGenerate} className="w-full">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={includeTypesense} onChange={(e) => setIncludeTypesense(e.target.checked)} className="h-4 w-4 rounded text-gray-900" />
+          <span className="text-sm text-gray-700">Re-sync Typesense search indexes after update</span>
+        </label>
+
+        <Button onClick={() => setScript(generateUpdateScript({ serverIp, sshUser, domain, includeTypesense }))} disabled={!canGenerate} className="w-full">
           Generate Update Script
         </Button>
       </div>
       {script && <ScriptOutput script={script} />}
     </>
+  )
+}
+
+interface UpdateCheckResult {
+  mode: 'development' | 'release'
+  updateAvailable: boolean
+  current: { sha?: string; shortSha?: string; committedAt?: string; version?: string }
+  latest: { sha?: string; shortSha?: string; committedAt?: string; commitsAhead?: number; version?: string }
+  updateType?: string
+  recentCommits?: Array<{ sha: string; message: string; date: string }>
+  changelogUrl?: string
+  checkedAt: string
+}
+
+function CmsUpdatesTab() {
+  const queryClient = useQueryClient()
+  const [copied, setCopied] = useState(false)
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['update-check'],
+    queryFn: () => api<UpdateCheckResult>('/admin/updates/check'),
+    staleTime: 60 * 60 * 1000,
+  })
+
+  const refreshMutation = useMutation({
+    mutationFn: () => api<UpdateCheckResult>('/admin/updates/refresh', { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['update-check'] })
+    },
+  })
+
+  if (isLoading) {
+    return <div className="py-8 text-center text-sm text-gray-500">Checking for updates...</div>
+  }
+
+  if (!data) {
+    return <div className="py-8 text-center text-sm text-gray-500">Unable to check for updates.</div>
+  }
+
+  const isDev = data.mode === 'development'
+
+  const updateCommands = isDev
+    ? `bun update @cms/core @cms/admin @cms/astro @cms/sdk @cms/cli
+bun run dev     # test locally first
+git add bun.lock && git commit -m "chore: update CMS"
+git push        # your GitHub Action handles the server deploy`
+    : `bun update @cms/core @cms/admin @cms/astro @cms/sdk @cms/cli
+bun run dev
+git add bun.lock && git commit -m "chore: update CMS to ${data.latest.version}"
+git push`
+
+  function copyCommands() {
+    navigator.clipboard.writeText(updateCommands)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-900">CMS Version</h3>
+        <button
+          onClick={() => refreshMutation.mutate()}
+          disabled={refreshMutation.isPending}
+          className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700"
+        >
+          <RefreshCw size={12} className={refreshMutation.isPending ? 'animate-spin' : ''} />
+          {refreshMutation.isPending ? 'Checking...' : 'Check now'}
+        </button>
+      </div>
+
+      <div className="rounded-lg border border-gray-200 bg-white p-5 space-y-4">
+        {/* Current version */}
+        <div>
+          <p className="text-xs font-medium uppercase text-gray-400">Current version</p>
+          {isDev ? (
+            <p className="mt-1 text-sm text-gray-700">
+              Commit <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs">{data.current.shortSha}</code>
+              {data.current.committedAt && (
+                <span className="ml-2 text-gray-500">
+                  — {new Date(data.current.committedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-gray-700">v{data.current.version}</p>
+          )}
+        </div>
+
+        {/* Latest version */}
+        {data.updateAvailable && (
+          <div>
+            <p className="text-xs font-medium uppercase text-gray-400">Latest available</p>
+            {isDev ? (
+              <p className="mt-1 text-sm text-gray-700">
+                Commit <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs">{data.latest.shortSha}</code>
+                {data.latest.committedAt && (
+                  <span className="ml-2 text-gray-500">
+                    — {new Date(data.latest.committedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+                <span className="ml-2 text-blue-600 font-medium">
+                  {data.latest.commitsAhead} commit{data.latest.commitsAhead !== 1 ? 's' : ''} ahead
+                </span>
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-gray-700">
+                v{data.latest.version}
+                {data.updateType && <span className="ml-2 text-gray-500">({data.updateType} update)</span>}
+              </p>
+            )}
+          </div>
+        )}
+
+        {!data.updateAvailable && (
+          <p className="text-sm text-green-600">You're up to date.</p>
+        )}
+      </div>
+
+      {/* Major update warning */}
+      {data.updateType === 'major' && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-600" />
+          <div>
+            <p className="text-sm font-medium text-amber-800">Major update — read the migration guide before updating.</p>
+            <a
+              href={`https://github.com/Kritano/Kritano-cms/blob/main/MIGRATION.md`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center gap-1 text-sm text-amber-700 hover:text-amber-900"
+            >
+              Migration guide <ExternalLink size={12} />
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Recent commits */}
+      {data.recentCommits && data.recentCommits.length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <p className="mb-3 text-xs font-medium uppercase text-gray-400">Recent changes</p>
+          <ul className="space-y-1.5">
+            {data.recentCommits.map((commit) => (
+              <li key={commit.sha} className="flex items-start gap-2 text-sm">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300" />
+                <span className="text-gray-700">{commit.message}</span>
+              </li>
+            ))}
+            {data.latest.commitsAhead && data.latest.commitsAhead > (data.recentCommits?.length || 0) && (
+              <li className="text-sm text-gray-400 ml-3.5">
+                ... {data.latest.commitsAhead - data.recentCommits.length} more
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {/* How to update */}
+      {data.updateAvailable && (
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <p className="mb-3 text-xs font-medium uppercase text-gray-400">How to update</p>
+          <p className="mb-3 text-sm text-gray-600">Run these commands in your project locally:</p>
+          <pre className="rounded-md bg-gray-900 p-4 text-sm text-gray-100 overflow-x-auto">{updateCommands}</pre>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={copyCommands}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <Copy size={14} />
+              {copied ? 'Copied!' : 'Copy commands'}
+            </button>
+            <a
+              href={data.changelogUrl || `https://github.com/Kritano/Kritano-cms/commits/main`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              View full changelog <ExternalLink size={12} />
+            </a>
+          </div>
+        </div>
+      )}
+
+      {data.checkedAt && (
+        <p className="text-xs text-gray-400">
+          Last checked: {new Date(data.checkedAt).toLocaleString()}
+        </p>
+      )}
+    </div>
   )
 }
 

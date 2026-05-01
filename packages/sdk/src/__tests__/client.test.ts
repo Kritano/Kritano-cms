@@ -51,7 +51,7 @@ describe('CollectionClient.findMany', () => {
   test('passes pagination params', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api' })
     await cms.collection('article').findMany({ page: 2, limit: 10 })
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = (mockFetch.mock.calls as any[][])[0][0] as string
     expect(url).toContain('page=2')
     expect(url).toContain('limit=10')
   })
@@ -59,14 +59,14 @@ describe('CollectionClient.findMany', () => {
   test('passes where filters', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api' })
     await cms.collection('article').findMany({ where: { status: 'published' } })
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = (mockFetch.mock.calls as any[][])[0][0] as string
     expect(url).toContain('status=published')
   })
 
   test('passes orderBy', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api' })
     await cms.collection('article').findMany({ orderBy: { publishedAt: 'desc' } })
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = (mockFetch.mock.calls as any[][])[0][0] as string
     expect(url).toContain('sort=publishedAt')
     expect(url).toContain('order=desc')
   })
@@ -74,14 +74,14 @@ describe('CollectionClient.findMany', () => {
   test('passes search', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api' })
     await cms.collection('article').findMany({ search: 'hello' })
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = (mockFetch.mock.calls as any[][])[0][0] as string
     expect(url).toContain('search=hello')
   })
 
   test('passes apiKey as Authorization header', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api', apiKey: 'secret' })
     await cms.collection('article').findMany()
-    const headers = mockFetch.mock.calls[0][1]?.headers as Record<string, string>
+    const headers = (mockFetch.mock.calls as any[][])[0][1]?.headers as Record<string, string>
     expect(headers['Authorization']).toBe('Bearer secret')
   })
 })
@@ -98,7 +98,7 @@ describe('CollectionClient.findOne', () => {
 
     const cms = new CMSClient({ url: 'https://example.com/api' })
     const result = await cms.collection('article').findOne({ where: { slug: 'test' } })
-    expect(result).toEqual({ id: '1', slug: 'test' })
+    expect(result).toEqual({ id: '1', slug: 'test' } as any)
   })
 
   test('fetches by id', async () => {
@@ -112,7 +112,7 @@ describe('CollectionClient.findOne', () => {
 
     const cms = new CMSClient({ url: 'https://example.com/api' })
     const result = await cms.collection('article').findOne({ where: { id: 'abc' } })
-    expect(result).toEqual({ id: 'abc' })
+    expect(result).toEqual({ id: 'abc' } as any)
   })
 
   test('returns null on 404', async () => {
@@ -146,7 +146,7 @@ describe('MediaClient', () => {
   test('list passes pagination', async () => {
     const cms = new CMSClient({ url: 'https://example.com/api' })
     await cms.media.list({ page: 2, limit: 5 })
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = (mockFetch.mock.calls as any[][])[0][0] as string
     expect(url).toContain('page=2')
     expect(url).toContain('limit=5')
   })

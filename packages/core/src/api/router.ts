@@ -16,6 +16,11 @@ import { apiKeyRoutes } from './routes/api-keys'
 import { formRoutes } from './routes/forms'
 import { createMediaFolderRoutes } from './routes/media-folders'
 import { backupRoutes } from './routes/backups'
+import { pluginRoutes } from './routes/plugins'
+import { searchRoutes } from './routes/search'
+import { oauthRoutes } from './routes/oauth'
+import { previewRoutes } from './routes/preview'
+import { updateRoutes } from './routes/updates'
 
 export function createApiRouter(config: CmsConfig): Hono {
   const api = new Hono()
@@ -23,6 +28,7 @@ export function createApiRouter(config: CmsConfig): Hono {
   // System routes
   api.route('/api', healthRoutes)
   api.route('/api', authRoutes)
+  api.route('/api', oauthRoutes)
   api.route('/api', mediaRoutes)
   api.route('/api', createSitemapRoutes(config))
   api.route('/api', kritanoRoutes)
@@ -38,6 +44,10 @@ export function createApiRouter(config: CmsConfig): Hono {
   api.route('/api', formRoutes)
   api.route('/api', createMediaFolderRoutes(config))
   api.route('/api', backupRoutes)
+  api.route('/api', pluginRoutes)
+  api.route('/api', searchRoutes)
+  api.route('/api', previewRoutes)
+  api.route('/api', updateRoutes)
 
   // Auto-generated collection routes
   for (const collection of config.collections) {

@@ -1,5 +1,6 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
+import { useUpdateCount } from '@/components/UpdateBanner'
 import {
   FileText,
   Image,
@@ -14,6 +15,8 @@ import {
   FileInput,
   CornerDownRight,
   Webhook,
+  Puzzle,
+  KeyRound,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -22,6 +25,7 @@ interface NavItem {
   label: string
   href: string
   icon: LucideIcon
+  badge?: number
 }
 
 // Collection icons — simple mapping, extendable later
@@ -57,13 +61,17 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
     { label: 'Activity Log', href: '/admin/activity', icon: ClipboardList },
   ]
 
+  const updateCount = useUpdateCount()
+
   const systemItems: NavItem[] = [
     { label: 'Media', href: '/admin/media', icon: Image },
     { label: 'Redirects', href: '/admin/redirects', icon: CornerDownRight },
     { label: 'Webhooks', href: '/admin/webhooks', icon: Webhook },
+    { label: 'API Keys', href: '/admin/api-keys', icon: KeyRound },
+    { label: 'Plugins', href: '/admin/plugins', icon: Puzzle },
     { label: 'Site', href: '/admin/site', icon: Settings },
     { label: 'Site Health', href: '/admin/site/health', icon: Activity },
-    { label: 'Deployment', href: '/admin/deployment', icon: Server },
+    { label: 'Deployment', href: '/admin/deployment', icon: Server, badge: updateCount || undefined },
   ]
 
   const accountItems: NavItem[] = [
@@ -158,7 +166,12 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
       )}
     >
       <Icon size={18} />
-      {item.label}
+      <span className="flex-1">{item.label}</span>
+      {item.badge != null && item.badge > 0 && (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-semibold text-white">
+          {item.badge}
+        </span>
+      )}
     </Link>
   )
 }

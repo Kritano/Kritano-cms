@@ -16,6 +16,20 @@ Open the admin at [http://localhost:3001/admin](http://localhost:3001/admin) and
 | Email for SSL | Yes | — | Email address for Let's Encrypt certificate |
 | OS | Yes | Ubuntu 24.04 | Ubuntu 22.04, Ubuntu 24.04, or Debian 12 |
 | Server size | Yes | Small | Small (1–2 CPU), Medium (2–4 CPU), or Large (4+ CPU) |
+| Include Typesense | Yes | Yes | Install Typesense for full-text search |
+
+### Typesense (full-text search)
+
+If you select "Yes" for Typesense, the generated script will:
+
+1. Download and install Typesense 26.0
+2. Generate a secure API key
+3. Configure Typesense with data and log directories
+4. Start and enable the systemd service
+5. Add `TYPESENSE_HOST`, `TYPESENSE_PORT`, `TYPESENSE_PROTOCOL`, and `TYPESENSE_API_KEY` to the CMS `.env`
+6. Run an initial search index sync
+
+If you select "No", search features are gracefully disabled — the CMS runs without errors but search endpoints return `{ search_unavailable: true }`.
 
 ### Server size tuning
 

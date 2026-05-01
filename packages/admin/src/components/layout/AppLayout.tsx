@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from '@tanstack/react-router'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
+import { GlobalSearch } from '../search/GlobalSearch'
 
 interface AppLayoutProps {
   collections: string[]
@@ -26,6 +27,8 @@ export function AppLayout({ collections, title = 'Dashboard' }: AppLayoutProps) 
           <Outlet />
         </main>
       </div>
+
+      <GlobalSearch />
     </div>
   )
 }
