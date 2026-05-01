@@ -1,4 +1,4 @@
-import type { CollectionDefinition, FieldDefinition } from '@kritano/types'
+import type { CollectionDefinition, FieldDefinition } from '#types'
 
 // Hardcoded collection schemas for v0.1
 // In production, these will come from the CMS config API

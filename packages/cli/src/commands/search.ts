@@ -8,7 +8,7 @@ import {
   clearCollection,
   getClient,
   collectionToTableName,
-} from '@kritano/core'
+} from '#core'
 
 export async function searchSync() {
   log.header('Search: Full Re-index')

@@ -1,4 +1,4 @@
-import type { BlocksFieldOptions, BlockDefinition, FieldDefinition } from '@kritano/types'
+import type { BlocksFieldOptions, BlockDefinition, FieldDefinition } from '#types'
 import { FieldBuilder } from './builder'
 
 export class BlocksFieldBuilder extends FieldBuilder<BlocksFieldOptions> {

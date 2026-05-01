@@ -1,4 +1,4 @@
-import type { TextFieldOptions } from '@kritano/types'
+import type { TextFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class TextFieldBuilder extends FieldBuilder<TextFieldOptions> {

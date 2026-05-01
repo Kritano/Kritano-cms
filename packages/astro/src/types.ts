@@ -1,4 +1,4 @@
-import type { ThemeConfig } from '@kritano/types'
+import type { ThemeConfig } from '#types'
 
 export interface CMSContext {
   doc: Record<string, unknown>

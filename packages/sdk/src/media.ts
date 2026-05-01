@@ -1,4 +1,4 @@
-import type { PaginatedResponse, Media } from '@kritano/types'
+import type { PaginatedResponse, Media } from '#types'
 
 export class MediaClient {
   constructor(

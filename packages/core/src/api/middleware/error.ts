@@ -1,5 +1,5 @@
 import type { Context } from 'hono'
-import type { ApiErrorResponse } from '@kritano/types'
+import type { ApiErrorResponse } from '#types'
 
 export function errorHandler(err: Error, c: Context) {
   console.error(`[API Error] ${err.message}`, err.stack)

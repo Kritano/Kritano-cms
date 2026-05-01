@@ -1,4 +1,4 @@
-import type { PluginDefinition } from '@kritano/types'
+import type { PluginDefinition } from '#types'
 
 /**
  * Resolve plugin load order based on `requires` declarations.

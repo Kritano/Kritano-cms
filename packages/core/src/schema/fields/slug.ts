@@ -1,4 +1,4 @@
-import type { SlugFieldOptions } from '@kritano/types'
+import type { SlugFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class SlugFieldBuilder extends FieldBuilder<SlugFieldOptions> {

@@ -13,7 +13,7 @@ import type {
   PluginJobOptions,
   CollectionDefinition,
   PluginConfigOverride,
-} from '@kritano/types'
+} from '#types'
 import type { Hono } from 'hono'
 import { PluginRegistry } from './registry'
 import { getClient } from '../db/client'

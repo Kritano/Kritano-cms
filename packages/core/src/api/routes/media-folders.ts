@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { getClient } from '../../db/client'
 import { requireAuth } from '../middleware/auth'
 import type { AuthEnv } from '../middleware/auth'
-import type { CmsConfig } from '@kritano/types'
+import type { CmsConfig } from '#types'
 import { collectionToTableName } from '../../db/schema-generator'
 
 export function createMediaFolderRoutes(config: CmsConfig): Hono<AuthEnv> {

@@ -17,6 +17,14 @@
     "./types": "./packages/types/src/index.ts",
     "./mcp": "./packages/mcp/src/index.ts"
   },
+  "imports": {
+    "#core": "./packages/core/src/index.ts",
+    "#types": "./packages/types/src/index.ts",
+    "#sdk": "./packages/sdk/src/index.ts",
+    "#astro": "./packages/astro/src/index.ts",
+    "#cli": "./packages/cli/src/index.ts",
+    "#mcp": "./packages/mcp/src/index.ts"
+  },
   "scripts": {
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter '*' typecheck"

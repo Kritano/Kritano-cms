@@ -1,4 +1,4 @@
-import type { PaginatedResponse, Document } from '@kritano/types'
+import type { PaginatedResponse, Document } from '#types'
 import type { CollectionSearchOptions, SearchResult } from './search'
 
 export interface FindManyOptions {

@@ -3,7 +3,7 @@ import { validateSchema, SchemaValidationError } from '../validate'
 import { defineConfig } from '../defineConfig'
 import { defineCollection } from '../defineCollection'
 import { text, slug, richText, select, seoBlock, media, relation, blocks, block, array, number } from '../fields'
-import type { CmsConfig } from '@kritano/types'
+import type { CmsConfig } from '#types'
 
 function validConfig(): CmsConfig {
   return defineConfig({

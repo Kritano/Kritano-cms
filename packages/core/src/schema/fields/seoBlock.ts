@@ -1,4 +1,4 @@
-import type { SeoBlockFieldOptions } from '@kritano/types'
+import type { SeoBlockFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class SeoBlockFieldBuilder extends FieldBuilder<SeoBlockFieldOptions> {

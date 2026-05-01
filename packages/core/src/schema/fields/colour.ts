@@ -1,4 +1,4 @@
-import type { ColourFieldOptions } from '@kritano/types'
+import type { ColourFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class ColourFieldBuilder extends FieldBuilder<ColourFieldOptions> {

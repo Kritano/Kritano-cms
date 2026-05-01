@@ -13,7 +13,10 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "#core": ["../core/src/index.ts"],
+      "#types": ["../types/dist/index.d.ts"],
+      "#sdk": ["../sdk/dist/index.d.ts"]
     }
   },
   "include": ["src"]

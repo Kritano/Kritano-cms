@@ -1,4 +1,4 @@
-import type { CmsConfig } from '@kritano/types'
+import type { CmsConfig } from '#types'
 import {
   collectionToTable,
   collectionToTableName,

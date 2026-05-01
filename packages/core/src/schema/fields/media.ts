@@ -1,4 +1,4 @@
-import type { MediaFieldOptions } from '@kritano/types'
+import type { MediaFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class MediaFieldBuilder extends FieldBuilder<MediaFieldOptions> {

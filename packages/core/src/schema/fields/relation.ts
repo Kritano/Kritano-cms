@@ -1,4 +1,4 @@
-import type { RelationFieldOptions } from '@kritano/types'
+import type { RelationFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class RelationFieldBuilder extends FieldBuilder<RelationFieldOptions> {

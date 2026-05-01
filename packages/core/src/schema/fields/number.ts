@@ -1,4 +1,4 @@
-import type { NumberFieldOptions } from '@kritano/types'
+import type { NumberFieldOptions } from '#types'
 import { FieldBuilder } from './builder'
 
 export class NumberFieldBuilder extends FieldBuilder<NumberFieldOptions> {

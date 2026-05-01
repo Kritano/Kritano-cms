@@ -1,4 +1,4 @@
-import type { CollectionDefinition, FieldDefinition, CmsConfig } from '@kritano/types'
+import type { CollectionDefinition, FieldDefinition, CmsConfig } from '#types'
 
 export interface ColumnDefinition {
   name: string

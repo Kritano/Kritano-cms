@@ -1,4 +1,4 @@
-import type { CmsConfig, CollectionDefinition, FieldDefinition } from '@kritano/types'
+import type { CmsConfig, CollectionDefinition, FieldDefinition } from '#types'
 
 function fieldToGraphQLType(field: FieldDefinition): string {
   switch (field.type) {

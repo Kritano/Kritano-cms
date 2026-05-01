@@ -13,7 +13,7 @@ import {
   seoBlock,
   blocks,
   block,
-} from '@kritano/core'
+} from '#core'
 
 export default defineConfig({
   site: {

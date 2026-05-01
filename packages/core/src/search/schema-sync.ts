@@ -1,4 +1,4 @@
-import type { CmsConfig, CollectionDefinition, FieldDefinition } from '@kritano/types'
+import type { CmsConfig, CollectionDefinition, FieldDefinition } from '#types'
 import { getSearchClient, isSearchAvailable } from './client'
 
 interface TypesenseFieldDef {
