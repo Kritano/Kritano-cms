@@ -1,196 +1,300 @@
-# Getting started
+# Kritano CMS — Getting Started
 
-This guide takes you from zero to a running CMS with content in about 15 minutes.
+Start a new site using Kritano CMS as a dependency.
+
+---
 
 ## Prerequisites
 
-- [Bun](https://bun.sh/) — install with `curl -fsSL https://bun.sh/install | bash`
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be running before you start
+- [Bun](https://bun.sh) installed
+- [Docker Desktop](https://docker.com) installed and running
 
-## Installation
+---
 
-```bash
-git clone https://github.com/kritano/cms.git my-site
-cd my-site
-cp .env.example .env
-bun install
-```
-
-## Start the dev environment
+## 1. Create your project
 
 ```bash
-bun run packages/cli/src/index.ts dev
+mkdir my-site && cd my-site
+git init
 ```
 
-This single command:
-
-1. Starts PostgreSQL 16 and Redis 7 via Docker Compose
-2. Creates and applies database migrations from your schema
-3. Seeds an admin user
-4. Generates TypeScript types for the SDK
-5. Starts the API server on port 3000 (with file watching)
-6. Starts the admin UI dev server on port 3001
-
-Once running, you'll see:
-
-```
-API       http://localhost:3000
-Admin     http://localhost:3001/admin
-GraphQL   http://localhost:3000/api/graphql
-Health    http://localhost:3000/api/health
-```
-
-## Log in to the admin
-
-Open [http://localhost:3001/admin](http://localhost:3001/admin) and log in with:
-
-```
-Email:    admin@cms.local
-Password: admin
-```
-
-You'll see the dashboard with the sidebar listing your collections (Pages, Articles, Projects), Media, Site settings, and Deployment.
-
-## Create your first article
-
-1. Click **Articles** in the sidebar.
-2. Click **New document**.
-3. Fill in the fields:
-   - **Title** — type "Hello World". The slug auto-generates to `hello-world`.
-   - **Body** — the rich text editor opens in Visual mode. Type some content, try the formatting toolbar (bold, italic, headings, lists), or switch to Markdown mode with the toolbar toggle.
-   - **Excerpt** — a short summary.
-   - **Tags** — click "Add item" to add tags.
-   - **Featured image** — click "Select media" to open the media picker. Drag an image onto the upload area, then select it.
-4. In the right sidebar, click **Publish**.
-
-Your article is now live at `GET http://localhost:3000/api/articles/slug/hello-world`.
-
-## Query the API
-
-With your article published, try these requests:
-
-### List all published articles
-
-```bash
-curl http://localhost:3000/api/articles?status=published
-```
+## 2. Create `package.json`
 
 ```json
 {
-  "data": [
-    {
-      "id": "abc-123",
-      "title": "Hello World",
-      "slug": "hello-world",
-      "status": "published",
-      ...
-    }
-  ],
-  "total": 1,
-  "page": 1,
-  "limit": 20,
-  "totalPages": 1
+  "name": "my-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cms dev",
+    "build": "cms build",
+    "migrate": "cms migrate"
+  },
+  "dependencies": {
+    "@kritano/cms": "github:Kritano/Kritano-cms#main"
+  }
 }
 ```
 
-### Get a single article by slug
+## 3. Create `cms.config.ts`
 
-```bash
-curl http://localhost:3000/api/articles/slug/hello-world
-```
-
-### GraphQL query
-
-```bash
-curl -X POST http://localhost:3000/api/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ articleList(status: \"published\") { data { title slug } total } }"}'
-```
-
-## Use the SDK
-
-Install the SDK in any frontend project:
+Define your content schema. Here's a minimal example:
 
 ```typescript
-import { CMSClient } from '@cms/sdk'
+import {
+  defineConfig,
+  defineCollection,
+  text, slug, richText, datetime,
+  select, media, seoBlock
+} from '@kritano/cms/core'
 
-const cms = new CMSClient({ url: 'http://localhost:3000/api' })
-
-// List published articles
-const articles = await cms.collection('article').findMany({
-  where: { status: 'published' },
-  orderBy: { publishedAt: 'desc' },
-  limit: 10,
-})
-
-// Get a single article by slug
-const article = await cms.collection('article').findOne({
-  where: { slug: 'hello-world' },
-})
-```
-
-## Create a page with blocks
-
-Pages support flexible content blocks. Try creating one:
-
-1. Click **Pages** in the sidebar.
-2. Click **New document**.
-3. Fill in the **Title** and note the auto-generated slug.
-4. Scroll to the **Content** field — this is the block builder.
-5. Click **Add block** and choose **Hero**:
-   - Fill in the heading and subheading.
-   - Select an image from the media library.
-   - Add a CTA label and URL.
-6. Click **Add block** again and choose **Text Block**. Write some content in the rich text editor.
-7. Drag the grip handle on any block to reorder.
-8. Publish the page.
-
-## Edit your schema
-
-Open `cms.config.ts` in your editor. This is the source of truth for your content model. Try adding a new field to the article collection:
-
-```typescript
-defineCollection('article', {
-  fields: {
-    title:         text().required(),
-    slug:          slug().from('title'),
-    body:          richText(),
-    excerpt:       textarea().maxLength(300),
-    author:        text(),                    // new field
-    tags:          array(text()),
-    featuredImage: media(),
-    publishedAt:   datetime().nullable(),
-    status:        select(['draft', 'published']).default('draft'),
-    seo:           seoBlock(),
+export default defineConfig({
+  site: {
+    name: 'My Site',
+    domain: 'https://example.com',
+    language: 'en',
   },
-}),
+
+  collections: [
+
+    defineCollection('page', {
+      fields: {
+        title:  text().required(),
+        slug:   slug().from('title'),
+        body:   richText(),
+        status: select(['draft', 'published']).default('draft'),
+        seo:    seoBlock(),
+      }
+    }),
+
+    defineCollection('article', {
+      fields: {
+        title:         text().required(),
+        slug:          slug().from('title'),
+        body:          richText(),
+        featuredImage: media(),
+        publishedAt:   datetime().nullable(),
+        status:        select(['draft', 'published']).default('draft'),
+        seo:           seoBlock(),
+      }
+    }),
+
+  ]
+})
 ```
 
-Then generate a migration and apply it:
+Add as many collections as you need. Available field types:
+
+| Field | Import | Description |
+|-------|--------|-------------|
+| `text()` | `text` | Single-line text |
+| `textarea()` | `textarea` | Multi-line text |
+| `richText()` | `richText` | Rich text editor |
+| `slug()` | `slug` | URL slug, can auto-generate from another field |
+| `url()` | `url` | URL field |
+| `select()` | `select` | Single select from options |
+| `multiSelect()` | `multiSelect` | Multiple select from options |
+| `media()` | `media` | Image/file upload |
+| `array()` | `array` | Array of any field type |
+| `datetime()` | `datetime` | Date and time |
+| `boolean()` | `boolean` | True/false |
+| `colour()` | `colour` | Colour picker |
+| `blocks()` | `blocks, block` | Block-based content |
+| `seoBlock()` | `seoBlock` | SEO meta fields (title, description, image) |
+
+## 4. Create `.env`
+
+```env
+# Database
+DATABASE_URL=postgresql://cms:cms@localhost:5432/cms
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Auth
+JWT_SECRET=change-me-to-a-random-string-at-least-32-chars
+REFRESH_TOKEN_SECRET=change-me-to-another-random-string
+
+# Site
+SITE_URL=http://localhost:3006
+ADMIN_URL=http://localhost:3006/admin
+
+# Media
+MEDIA_PATH=./media
+
+# Update channel
+CMS_UPDATE_CHANNEL=development
+```
+
+Generate real secrets:
 
 ```bash
-bun run packages/cli/src/commands/migrate-create.ts
-bun run packages/cli/src/commands/migrate.ts
+openssl rand -base64 32  # run twice, one for each secret
 ```
 
-The migration system diffs your schema against the previous snapshot and generates the correct `ALTER TABLE` SQL. The new `author` field will appear in the admin UI and API automatically.
+## 5. Create `.gitignore`
 
-## Environment variables
+```
+node_modules/
+dist/
+.env
+media/
+*.local
+```
 
-The `.env` file configures your local environment:
+## 6. Install and run
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `DATABASE_URL` | `postgresql://cms:cms@localhost:5432/cms` | PostgreSQL connection string |
-| `REDIS_URL` | `redis://localhost:6379` | Redis connection string |
-| `JWT_SECRET` | `change-me-to-a-random-secret` | Secret for signing JWT tokens |
-| `MEDIA_PATH` | `./media` | Where uploaded files are stored |
-| `SITE_URL` | `http://localhost:4321` | Public URL of the frontend |
-| `ADMIN_URL` | `http://localhost:3000/admin` | Admin UI URL (used for CORS) |
+```bash
+bun install
+bun run dev
+```
 
-## Connect Claude Desktop (MCP)
+The CMS handles everything:
 
-Kritano CMS has a built-in MCP server that lets Claude Desktop and Cursor manage your content directly. See [MCP server](mcp.md) for setup instructions.
+- Starts Postgres and Redis via Docker Compose
+- Runs database migrations from your schema
+- Generates TypeScript types for your collections
+- Starts the API server
+- Starts the admin UI
+- Starts the frontend (default theme)
+
+## 7. Open the admin
+
+Go to [http://localhost:3006/admin](http://localhost:3006/admin)
+
+Login: `admin@cms.local` / `admin` — change this immediately.
+
+---
+
+## What's running
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Admin | `http://localhost:3006/admin` | Content management UI |
+| Frontend | `http://localhost:3006` | Your site (default theme) |
+| API | `http://localhost:3005/api` | REST API |
+| GraphQL | `http://localhost:3005/api/graphql` | GraphQL endpoint |
+| Health | `http://localhost:3005/api/health` | Health check |
+
+---
+
+## Adding a custom theme
+
+Optional. The default theme works out of the box. When you're ready to customise the frontend, create a theme:
+
+```
+themes/my-theme/
+├── theme.config.ts
+├── layouts/
+│   └── Base.astro
+├── components/
+├── templates/
+│   ├── page.astro
+│   └── article.astro
+├── pages/
+│   ├── index.astro
+│   └── 404.astro
+└── styles/
+    └── global.css
+```
+
+Register it in `cms.config.ts`:
+
+```typescript
+export default defineConfig({
+  theme: './themes/my-theme',
+  // ...
+})
+```
+
+Define the theme:
+
+```typescript
+// themes/my-theme/theme.config.ts
+import { defineTheme } from '@kritano/cms/astro'
+
+export default defineTheme({
+  name: 'my-theme',
+  version: '1.0.0',
+  templates: {
+    page:    './templates/page.astro',
+    article: './templates/article.astro',
+  },
+  settings: {
+    siteName: { type: 'text', label: 'Site Name', default: 'My Site' },
+  }
+})
+```
+
+---
+
+## Project structure
+
+```
+my-site/
+├── cms.config.ts       ← Your content schema
+├── package.json        ← CMS as a dependency
+├── .env                ← Environment config (not committed)
+├── .gitignore
+├── bun.lock
+├── migrations/         ← Auto-generated, commit these
+├── media/              ← Uploaded files (not committed)
+└── themes/             ← Custom theme (optional)
+```
+
+---
+
+## Day-to-day workflow
+
+**Add a new collection:**
+1. Add it to `cms.config.ts`
+2. Run `bun run dev` — migrations and types auto-update
+3. Create content in the admin
+4. Add a template in your theme (if using a custom theme)
+
+**Update the CMS:**
+```bash
+bun update @kritano/cms
+bun run dev
+```
+
+---
+
+## Deployment
+
+Go to **Admin → Deployment → Setup**, fill in your server details, and click **Generate Script**. Run the generated script on your server.
+
+For auto-deploy on push, add a GitHub Action:
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/my-site
+            git pull origin main
+            bun install
+            bun run migrate
+            bun run build
+            systemctl restart cms-api cms-worker
+```
+
+Add `SERVER_IP` and `SSH_KEY` as GitHub secrets.
+
+---
 
 ## Next steps
 
