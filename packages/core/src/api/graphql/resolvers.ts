@@ -1,4 +1,4 @@
-import type { CmsConfig } from '@cms/types'
+import type { CmsConfig } from '@kritano/types'
 import { getClient } from '../../db/client'
 import { collectionToTableName, fieldToColumnName } from '../../db/schema-generator'
 

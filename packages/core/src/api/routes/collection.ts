@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import type { CollectionDefinition, FieldDefinition } from '@cms/types'
+import type { CollectionDefinition, FieldDefinition } from '@kritano/types'
 import { getClient } from '../../db/client'
 import { collectionToTableName, fieldToColumnName } from '../../db/schema-generator'
 import { requireAuth, optionalAuth, requireScope } from '../middleware/auth'

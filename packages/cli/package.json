@@ -1,5 +1,5 @@
 {
-  "name": "@cms/cli",
+  "name": "@kritano/cli",
   "version": "0.1.0",
   "type": "module",
   "bin": {
@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cms/core": "workspace:*",
-    "@cms/types": "workspace:*",
+    "@kritano/core": "workspace:*",
+    "@kritano/types": "workspace:*",
     "bcryptjs": "^3.0.0"
   },
   "devDependencies": {

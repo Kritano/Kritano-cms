@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import type { JwtPayload } from '@cms/types'
+import type { JwtPayload } from '@kritano/types'
 import { getClient } from '../../db/client'
 
 export type AuthEnv = {

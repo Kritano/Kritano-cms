@@ -1,4 +1,4 @@
-import type { LoadedPlugin, ConflictResult, CollectionDefinition } from '@cms/types'
+import type { LoadedPlugin, ConflictResult, CollectionDefinition } from '@kritano/types'
 
 /**
  * Check for conflicts across all plugins that are about to be loaded.

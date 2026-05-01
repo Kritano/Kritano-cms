@@ -8,7 +8,7 @@ export interface CMSIntegrationOptions {
 
 export function cmsIntegration(_options: CMSIntegrationOptions = {}) {
   return {
-    name: '@cms/astro',
+    name: '@kritano/astro',
     hooks: {
       'astro:config:setup': ({ updateConfig }: any) => {
         // Future: inject routes from cms.config.ts collections

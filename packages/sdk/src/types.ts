@@ -9,4 +9,4 @@ export type {
   ApiResponse,
   ApiError,
   SeoBlock,
-} from '@cms/types'
+} from '@kritano/types'

@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { log } from '../utils/logger'
 import { getProjectRoot, loadConfig } from '../utils/config'
-import { checkVersionCompatibility } from '@cms/core'
+import { checkVersionCompatibility } from '@kritano/core'
 
 const CMS_VERSION = '0.3.0'
 
@@ -273,7 +273,7 @@ export async function pluginEnable() {
 
   // Update database
   try {
-    const { getClient } = await import('@cms/core')
+    const { getClient } = await import('@kritano/core')
     const sql = getClient()
     await sql`
       INSERT INTO plugin_settings (plugin_name, enabled)
@@ -298,7 +298,7 @@ export async function pluginDisable() {
   log.step(`Disabling ${name}…`)
 
   try {
-    const { getClient } = await import('@cms/core')
+    const { getClient } = await import('@kritano/core')
     const sql = getClient()
     await sql`
       INSERT INTO plugin_settings (plugin_name, enabled)

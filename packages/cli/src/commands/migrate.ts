@@ -1,6 +1,6 @@
 import { log } from '../utils/logger'
 import { loadConfig } from '../utils/config'
-import { runMigrations } from '@cms/core'
+import { runMigrations } from '@kritano/core'
 import { getProjectRoot } from '../utils/config'
 
 export async function migrate() {

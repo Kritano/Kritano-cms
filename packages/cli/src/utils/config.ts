@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import type { CmsConfig } from '@cms/types'
-import { validateSchema } from '@cms/core'
+import type { CmsConfig } from '@kritano/types'
+import { validateSchema } from '@kritano/core'
 
 export function getProjectRoot(): string {
   return process.cwd()

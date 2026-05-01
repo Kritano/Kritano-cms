@@ -8,7 +8,7 @@ import type {
   PluginConfigOverride,
   HookContext,
   PluginHookEvent,
-} from '@cms/types'
+} from '@kritano/types'
 import type { Hono } from 'hono'
 import { PluginRegistry, getPluginRegistry, resetPluginRegistry } from './registry'
 import { createPluginContext, createRestrictedContext } from './context'

@@ -1,5 +1,5 @@
 {
-  "name": "@cms/astro",
+  "name": "@kritano/astro",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -15,8 +15,8 @@
     "typecheck": "tsc --emitDeclarationOnly"
   },
   "dependencies": {
-    "@cms/sdk": "workspace:*",
-    "@cms/types": "workspace:*"
+    "@kritano/sdk": "workspace:*",
+    "@kritano/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

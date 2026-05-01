@@ -1,5 +1,5 @@
 {
-  "name": "@cms/sdk",
+  "name": "@kritano/sdk",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@cms/types": "workspace:*"
+    "@kritano/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

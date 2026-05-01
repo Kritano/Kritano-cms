@@ -1,4 +1,4 @@
-import type { Document } from '@cms/types'
+import type { Document } from '@kritano/types'
 import { CollectionClient } from './collection'
 import { MediaClient } from './media'
 import { SearchClient, type SearchOptions, type SearchResult } from './search'

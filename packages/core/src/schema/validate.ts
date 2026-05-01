@@ -1,4 +1,4 @@
-import type { CmsConfig, FieldDefinition, CollectionDefinition } from '@cms/types'
+import type { CmsConfig, FieldDefinition, CollectionDefinition } from '@kritano/types'
 
 export class SchemaValidationError extends Error {
   constructor(message: string) {

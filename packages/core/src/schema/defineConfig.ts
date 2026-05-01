@@ -1,4 +1,4 @@
-import type { CmsConfig, SiteConfig, CollectionDefinition, PluginConfigEntry } from '@cms/types'
+import type { CmsConfig, SiteConfig, CollectionDefinition, PluginConfigEntry } from '@kritano/types'
 
 export function defineConfig(options: {
   site: SiteConfig

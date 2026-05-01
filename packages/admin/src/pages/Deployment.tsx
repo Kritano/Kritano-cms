@@ -201,11 +201,11 @@ function CmsUpdatesTab() {
   const isDev = data.mode === 'development'
 
   const updateCommands = isDev
-    ? `bun update @cms/core @cms/admin @cms/astro @cms/sdk @cms/cli
+    ? `bun update @kritano/cms
 bun run dev     # test locally first
 git add bun.lock && git commit -m "chore: update CMS"
 git push        # your GitHub Action handles the server deploy`
-    : `bun update @cms/core @cms/admin @cms/astro @cms/sdk @cms/cli
+    : `bun update @kritano/cms
 bun run dev
 git add bun.lock && git commit -m "chore: update CMS to ${data.latest.version}"
 git push`

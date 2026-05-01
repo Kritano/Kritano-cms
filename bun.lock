@@ -11,13 +11,13 @@
       },
     },
     "packages/admin": {
-      "name": "@cms/admin",
+      "name": "@kritano/admin",
       "version": "0.1.0",
       "dependencies": {
-        "@cms/types": "workspace:*",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
+        "@kritano/types": "workspace:*",
         "@tanstack/react-query": "^5.62.0",
         "@tanstack/react-router": "^1.93.0",
         "@tiptap/extension-image": "^3.22.5",
@@ -41,11 +41,11 @@
       },
     },
     "packages/astro": {
-      "name": "@cms/astro",
+      "name": "@kritano/astro",
       "version": "0.1.0",
       "dependencies": {
-        "@cms/sdk": "workspace:*",
-        "@cms/types": "workspace:*",
+        "@kritano/sdk": "workspace:*",
+        "@kritano/types": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "^1.3.0",
@@ -53,14 +53,14 @@
       },
     },
     "packages/cli": {
-      "name": "@cms/cli",
+      "name": "@kritano/cli",
       "version": "0.1.0",
       "bin": {
         "cms": "./src/index.ts",
       },
       "dependencies": {
-        "@cms/core": "workspace:*",
-        "@cms/types": "workspace:*",
+        "@kritano/core": "workspace:*",
+        "@kritano/types": "workspace:*",
         "bcryptjs": "^3.0.0",
       },
       "devDependencies": {
@@ -69,11 +69,11 @@
       },
     },
     "packages/core": {
-      "name": "@cms/core",
+      "name": "@kritano/core",
       "version": "0.1.0",
       "dependencies": {
-        "@cms/types": "workspace:*",
         "@hono/node-server": "^2.0.0",
+        "@kritano/types": "workspace:*",
         "bcryptjs": "^3.0.3",
         "bullmq": "^5.76.4",
         "date-fns": "^4.1.0",
@@ -103,7 +103,7 @@
       },
     },
     "packages/mcp": {
-      "name": "@cms/mcp",
+      "name": "@kritano/mcp",
       "version": "0.2.0",
       "bin": {
         "cms-mcp": "./src/index.ts",
@@ -114,10 +114,10 @@
       },
     },
     "packages/sdk": {
-      "name": "@cms/sdk",
+      "name": "@kritano/sdk",
       "version": "0.1.0",
       "dependencies": {
-        "@cms/types": "workspace:*",
+        "@kritano/types": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "^1.3.0",
@@ -125,7 +125,7 @@
       },
     },
     "packages/types": {
-      "name": "@cms/types",
+      "name": "@kritano/types",
       "version": "0.1.0",
       "devDependencies": {
         "bun-types": "^1.3.0",
@@ -173,20 +173,6 @@
     "@babel/traverse": ["@babel/traverse@7.29.0", "", { "dependencies": { "@babel/code-frame": "^7.29.0", "@babel/generator": "^7.29.0", "@babel/helper-globals": "^7.28.0", "@babel/parser": "^7.29.0", "@babel/template": "^7.28.6", "@babel/types": "^7.29.0", "debug": "^4.3.1" } }, "sha512-4HPiQr0X7+waHfyXPZpWPfWL/J7dcN1mx9gL6WdQVMbPnF3+ZhSMs8tCxN7oHddJE9fhNE7+lxdnlyemKfJRuA=="],
 
     "@babel/types": ["@babel/types@7.29.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A=="],
-
-    "@cms/admin": ["@cms/admin@workspace:packages/admin"],
-
-    "@cms/astro": ["@cms/astro@workspace:packages/astro"],
-
-    "@cms/cli": ["@cms/cli@workspace:packages/cli"],
-
-    "@cms/core": ["@cms/core@workspace:packages/core"],
-
-    "@cms/mcp": ["@cms/mcp@workspace:packages/mcp"],
-
-    "@cms/sdk": ["@cms/sdk@workspace:packages/sdk"],
-
-    "@cms/types": ["@cms/types@workspace:packages/types"],
 
     "@dnd-kit/accessibility": ["@dnd-kit/accessibility@3.1.1", "", { "dependencies": { "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw=="],
 
@@ -349,6 +335,20 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@kritano/admin": ["@kritano/admin@workspace:packages/admin"],
+
+    "@kritano/astro": ["@kritano/astro@workspace:packages/astro"],
+
+    "@kritano/cli": ["@kritano/cli@workspace:packages/cli"],
+
+    "@kritano/core": ["@kritano/core@workspace:packages/core"],
+
+    "@kritano/mcp": ["@kritano/mcp@workspace:packages/mcp"],
+
+    "@kritano/sdk": ["@kritano/sdk@workspace:packages/sdk"],
+
+    "@kritano/types": ["@kritano/types@workspace:packages/types"],
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.29.0", "", { "dependencies": { "@hono/node-server": "^1.19.9", "ajv": "^8.17.1", "ajv-formats": "^3.0.1", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.2.1", "express-rate-limit": "^8.2.1", "hono": "^4.11.4", "jose": "^6.1.3", "json-schema-typed": "^8.0.2", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.25 || ^4.0", "zod-to-json-schema": "^3.25.1" }, "peerDependencies": { "@cfworker/json-schema": "^4.1.1" }, "optionalPeers": ["@cfworker/json-schema"] }, "sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ=="],
 

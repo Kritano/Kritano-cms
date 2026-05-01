@@ -1,4 +1,4 @@
-import type { BlockDefinition } from '@cms/types'
+import type { BlockDefinition } from '@kritano/types'
 import { Plus, X } from 'lucide-react'
 
 interface Props {

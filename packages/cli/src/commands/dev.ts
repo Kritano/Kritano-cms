@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { log } from '../utils/logger'
 import { loadConfig, getProjectRoot } from '../utils/config'
 import { ensureDockerRunning } from '../utils/docker'
-import { createMigration, runMigrations, getClient } from '@cms/core'
+import { createMigration, runMigrations, getClient } from '@kritano/core'
 import bcrypt from 'bcryptjs'
 import { generate } from './generate'
 

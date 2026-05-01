@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import type { CmsConfig } from '@cms/types'
+import type { CmsConfig } from '@kritano/types'
 import { healthRoutes } from './routes/health'
 import { authRoutes } from './routes/auth'
 import { createCollectionRoutes } from './routes/collection'

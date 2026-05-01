@@ -1,4 +1,4 @@
-import type { CollectionDefinition, FieldDefinition } from '@cms/types'
+import type { CollectionDefinition, FieldDefinition } from '@kritano/types'
 import { getSearchClient, isSearchAvailable } from './client'
 
 /** Extract plain text from TipTap JSON content */

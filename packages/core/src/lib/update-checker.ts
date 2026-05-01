@@ -145,7 +145,7 @@ async function checkReleaseUpdates(): Promise<UpdateCheckResult> {
   const now = new Date().toISOString()
 
   try {
-    const res = await fetch('https://registry.npmjs.org/@cms/core/latest', {
+    const res = await fetch('https://registry.npmjs.org/@kritano/cms/latest', {
       headers: { Accept: 'application/json' },
     })
 

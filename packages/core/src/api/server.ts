@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { createYoga, createSchema } from 'graphql-yoga'
-import type { CmsConfig } from '@cms/types'
+import type { CmsConfig } from '@kritano/types'
 import { corsMiddleware } from './middleware/cors'
 import { errorHandler } from './middleware/error'
 import { createApiRouter } from './router'

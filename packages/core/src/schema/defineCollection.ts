@@ -1,4 +1,4 @@
-import type { CollectionDefinition, FieldDefinition } from '@cms/types'
+import type { CollectionDefinition, FieldDefinition } from '@kritano/types'
 import { FieldBuilder } from './fields/builder'
 
 export function defineCollection(

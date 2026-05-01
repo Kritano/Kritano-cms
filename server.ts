@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import config from './cms.config'
-import { createServer } from '@cms/core'
+import { createServer } from '@kritano/core'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 

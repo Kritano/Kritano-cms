@@ -1,4 +1,4 @@
-import { CMSClient } from '@cms/sdk'
+import { CMSClient } from '@kritano/sdk'
 import type { CMSContext } from './types'
 
 let _client: CMSClient | null = null
@@ -32,7 +32,7 @@ export function useCMS(props: {
   }
 }
 
-export function defineTheme(config: import('@cms/types').ThemeConfig): import('@cms/types').ThemeConfig {
+export function defineTheme(config: import('@kritano/types').ThemeConfig): import('@kritano/types').ThemeConfig {
   return config
 }
 

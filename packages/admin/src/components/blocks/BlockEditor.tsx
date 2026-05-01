@@ -1,4 +1,4 @@
-import type { BlockDefinition } from '@cms/types'
+import type { BlockDefinition } from '@kritano/types'
 import { FieldRenderer } from '@/components/fields/FieldRenderer'
 
 interface Props {

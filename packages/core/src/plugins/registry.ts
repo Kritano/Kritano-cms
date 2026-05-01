@@ -10,7 +10,7 @@ import type {
   DashboardWidget,
   SettingsPage,
   PluginConfigOverride,
-} from '@cms/types'
+} from '@kritano/types'
 
 export class PluginRegistry {
   private plugins = new Map<string, LoadedPlugin>()
