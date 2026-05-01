@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { CmsConfig, CollectionDefinition, FieldDefinition } from '@kritano/cms/types'
 import { log } from '../utils/logger'
-import { loadConfig, getProjectRoot } from '../utils/config'
+import { loadConfig, getCmsRoot } from '../utils/config'
 
 function fieldToTsType(field: FieldDefinition): string {
   switch (field.type) {
@@ -88,9 +88,9 @@ export async function generate() {
 
   try {
     const config = await loadConfig()
-    const root = getProjectRoot()
+    const cmsRoot = getCmsRoot()
 
-    const outputDir = resolve(root, 'packages/sdk/src/generated')
+    const outputDir = resolve(cmsRoot, 'packages/sdk/src/generated')
     await mkdir(outputDir, { recursive: true })
 
     const outputPath = resolve(outputDir, 'collections.ts')

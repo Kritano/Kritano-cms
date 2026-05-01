@@ -2,7 +2,7 @@ import { $ } from 'bun'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { log } from '../utils/logger'
-import { loadConfig, getProjectRoot } from '../utils/config'
+import { loadConfig, getProjectRoot, getCmsRoot } from '../utils/config'
 import { ensureDockerRunning } from '../utils/docker'
 import { createMigration, runMigrations, getClient } from '@kritano/cms/core'
 import bcrypt from 'bcryptjs'
@@ -87,6 +87,8 @@ export async function dev() {
   const proxyPort = process.env.DEV_PORT || '3006'
   const viteInternalPort = '3007'
   const astroInternalPort = '4321'
+  const projectRoot = getProjectRoot()
+  const cmsRoot = getCmsRoot()
 
   log.header('Starting servers')
   log.url('API', `http://localhost:${apiPort}`)
@@ -98,21 +100,24 @@ export async function dev() {
   log.info('Login: admin@cms.local / admin')
   console.log('')
 
-  // 7. Start API server with --watch
-  const apiProc = Bun.spawn(['bun', '--watch', 'run', 'server.ts'], {
+  // 7. Start API server with --watch (server.ts is in the consumer's project root)
+  const apiProc = Bun.spawn(['bun', '--watch', 'run', resolve(projectRoot, 'server.ts')], {
+    cwd: projectRoot,
     stdio: ['inherit', 'inherit', 'inherit'],
     env: { ...process.env, PORT: apiPort },
   })
 
-  // 8. Start admin UI dev server (Vite on internal port, not user-facing)
-  const adminProc = Bun.spawn(['bun', 'run', '--cwd', 'packages/admin', 'dev', '--', '--port', viteInternalPort], {
+  // 8. Start admin UI dev server (packages/admin is in the CMS package)
+  const adminDir = resolve(cmsRoot, 'packages/admin')
+  const adminProc = Bun.spawn(['bun', 'run', '--cwd', adminDir, 'dev', '--', '--port', viteInternalPort], {
     stdio: ['inherit', 'inherit', 'inherit'],
     env: { ...process.env, PORT: apiPort, VITE_INTERNAL_PORT: viteInternalPort },
   })
 
-  // 9. Start Astro frontend dev server (on internal port, not user-facing)
+  // 9. Start Astro frontend dev server (themes/default is in the CMS package)
+  const themeDir = resolve(cmsRoot, 'themes/default')
   const frontendProc = Bun.spawn(['bunx', 'astro', 'dev', '--port', astroInternalPort], {
-    cwd: resolve(getProjectRoot(), 'themes/default'),
+    cwd: themeDir,
     stdio: ['inherit', 'inherit', 'inherit'],
     env: { ...process.env, CMS_API_URL: `http://localhost:${apiPort}/api`, ASTRO_INTERNAL_PORT: astroInternalPort },
   })

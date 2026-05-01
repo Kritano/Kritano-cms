@@ -1,6 +1,7 @@
 import { $ } from 'bun'
+import { resolve } from 'node:path'
 import { log } from '../utils/logger'
-import { loadConfig } from '../utils/config'
+import { loadConfig, getCmsRoot } from '../utils/config'
 
 export async function build() {
   log.header('Building CMS')
@@ -16,8 +17,9 @@ export async function build() {
 
   // 2. Build admin UI
   log.step('Building admin UI…')
+  const adminDir = resolve(getCmsRoot(), 'packages/admin')
   try {
-    await $`bun run --cwd packages/admin build`
+    await $`bun run --cwd ${adminDir} build`
     log.success('Admin built')
   } catch (err: any) {
     log.error(`Admin build failed: ${err.message}`)
