@@ -100,8 +100,8 @@ export async function dev() {
   log.info('Login: admin@cms.local / admin')
   console.log('')
 
-  // 7. Start API server with --watch (server.ts is in the consumer's project root)
-  const apiProc = Bun.spawn(['bun', '--watch', 'run', resolve(projectRoot, 'server.ts')], {
+  // 7. Start API server with --watch (server.ts is in the CMS package)
+  const apiProc = Bun.spawn(['bun', '--watch', 'run', resolve(cmsRoot, 'server.ts')], {
     cwd: projectRoot,
     stdio: ['inherit', 'inherit', 'inherit'],
     env: { ...process.env, PORT: apiPort },
