@@ -1,4 +1,4 @@
-import type { UrlFieldOptions } from '#types'
+import type { UrlFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class UrlFieldBuilder extends FieldBuilder<UrlFieldOptions> {

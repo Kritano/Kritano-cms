@@ -1,4 +1,4 @@
-import type { RichTextFieldOptions } from '#types'
+import type { RichTextFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class RichTextFieldBuilder extends FieldBuilder<RichTextFieldOptions> {

@@ -1,4 +1,4 @@
-import type { PluginDefinition } from '#types'
+import type { PluginDefinition } from '@kritano/cms/types'
 
 export function definePlugin(definition: PluginDefinition): PluginDefinition {
   if (!definition.name) {

@@ -1,4 +1,4 @@
-import type { BooleanFieldOptions } from '#types'
+import type { BooleanFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class BooleanFieldBuilder extends FieldBuilder<BooleanFieldOptions> {

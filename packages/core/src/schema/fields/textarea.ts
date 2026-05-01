@@ -1,4 +1,4 @@
-import type { TextareaFieldOptions } from '#types'
+import type { TextareaFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class TextareaFieldBuilder extends FieldBuilder<TextareaFieldOptions> {

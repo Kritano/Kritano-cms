@@ -1,4 +1,4 @@
-import type { PluginDefinition, RestrictedPluginContext } from '#types'
+import type { PluginDefinition, RestrictedPluginContext } from '@kritano/cms/types'
 import { PluginRegistry } from './registry'
 import { createRestrictedContext } from './context'
 

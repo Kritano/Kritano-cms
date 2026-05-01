@@ -1,4 +1,4 @@
-import type { DatetimeFieldOptions } from '#types'
+import type { DatetimeFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class DatetimeFieldBuilder extends FieldBuilder<DatetimeFieldOptions> {

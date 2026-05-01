@@ -1,4 +1,4 @@
-import type { FieldDefinition } from '#types'
+import type { FieldDefinition } from '@kritano/cms/types'
 import { TextField } from './TextField'
 import { TextareaField } from './TextareaField'
 import { SlugField } from './SlugField'

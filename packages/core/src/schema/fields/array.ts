@@ -1,4 +1,4 @@
-import type { ArrayFieldOptions, FieldDefinition } from '#types'
+import type { ArrayFieldOptions, FieldDefinition } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class ArrayFieldBuilder extends FieldBuilder<ArrayFieldOptions> {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { BlockDefinition, Block } from '#types'
+import type { BlockDefinition, Block } from '@kritano/cms/types'
 import {
   DndContext,
   closestCenter,

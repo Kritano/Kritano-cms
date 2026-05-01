@@ -1,4 +1,4 @@
-import type { MultiSelectFieldOptions } from '#types'
+import type { MultiSelectFieldOptions } from '@kritano/cms/types'
 import { FieldBuilder } from './builder'
 
 export class MultiSelectFieldBuilder extends FieldBuilder<MultiSelectFieldOptions> {

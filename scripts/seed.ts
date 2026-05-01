@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { getClient, closeConnection } from '#core'
+import { getClient, closeConnection } from '@kritano/cms/core'
 import bcrypt from 'bcryptjs'
 
 async function seed() {

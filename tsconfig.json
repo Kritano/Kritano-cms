@@ -16,12 +16,12 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "#core": ["./packages/core/src/index.ts"],
-      "#types": ["./packages/types/dist/index.d.ts"],
-      "#sdk": ["./packages/sdk/dist/index.d.ts"],
-      "#astro": ["./packages/astro/src/index.ts"],
-      "#cli": ["./packages/cli/src/index.ts"],
-      "#mcp": ["./packages/mcp/src/index.ts"]
+      "@kritano/cms/core": ["./packages/core/src/index.ts"],
+      "@kritano/cms/types": ["./packages/types/dist/index.d.ts"],
+      "@kritano/cms/sdk": ["./packages/sdk/dist/index.d.ts"],
+      "@kritano/cms/astro": ["./packages/astro/src/index.ts"],
+      "@kritano/cms/cli": ["./packages/cli/src/index.ts"],
+      "@kritano/cms/mcp": ["./packages/mcp/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist"]

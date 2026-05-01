@@ -1,4 +1,4 @@
-import type { FieldDefinition, BaseFieldOptions } from '#types'
+import type { FieldDefinition, BaseFieldOptions } from '@kritano/cms/types'
 
 export class FieldBuilder<T extends FieldDefinition = FieldDefinition> {
   protected _def: T
