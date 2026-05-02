@@ -85,10 +85,22 @@ export async function dev() {
 
   const apiPort = process.env.PORT || '3005'
   const proxyPort = process.env.DEV_PORT || '3006'
-  const viteInternalPort = '3007'
   const astroInternalPort = '4321'
   const projectRoot = getProjectRoot()
   const cmsRoot = getCmsRoot()
+  const adminDistPath = resolve(cmsRoot, 'packages/admin/dist')
+
+  // Ensure admin is built
+  if (!existsSync(resolve(adminDistPath, 'index.html'))) {
+    log.step('Building admin UI (first run)…')
+    try {
+      const adminDir = resolve(cmsRoot, 'packages/admin')
+      await $`bun run --cwd ${adminDir} build`.quiet()
+      log.success('Admin built')
+    } catch (err: any) {
+      log.warn(`Admin build failed: ${err.message}. Admin UI may not be available.`)
+    }
+  }
 
   log.header('Starting servers')
   log.url('API', `http://localhost:${apiPort}`)
@@ -107,14 +119,7 @@ export async function dev() {
     env: { ...process.env, PORT: apiPort },
   })
 
-  // 8. Start admin UI dev server (packages/admin is in the CMS package)
-  const adminDir = resolve(cmsRoot, 'packages/admin')
-  const adminProc = Bun.spawn(['bun', 'run', '--cwd', adminDir, 'dev', '--', '--port', viteInternalPort], {
-    stdio: ['inherit', 'inherit', 'inherit'],
-    env: { ...process.env, PORT: apiPort, VITE_INTERNAL_PORT: viteInternalPort },
-  })
-
-  // 9. Start Astro frontend dev server (themes/default is in the CMS package)
+  // 8. Start Astro frontend dev server (themes/default is in the CMS package)
   const themeDir = resolve(cmsRoot, 'themes/default')
   const frontendProc = Bun.spawn(['bunx', 'astro', 'dev', '--port', astroInternalPort], {
     cwd: themeDir,
@@ -122,32 +127,66 @@ export async function dev() {
     env: { ...process.env, CMS_API_URL: `http://localhost:${apiPort}/api`, ASTRO_INTERNAL_PORT: astroInternalPort },
   })
 
-  // 10. Start reverse proxy — single entry point for admin + frontend
+  // 9. Start reverse proxy — serves pre-built admin + proxies API and frontend
+  const { join } = await import('node:path')
+
   const proxy = Bun.serve({
     port: parseInt(proxyPort),
     async fetch(req) {
       const url = new URL(req.url)
 
-      let target: string
+      // API routes → API server
       if (url.pathname.startsWith('/api')) {
-        target = `http://localhost:${apiPort}`
-      } else if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/@') || url.pathname.startsWith('/__vite') || url.pathname.startsWith('/node_modules/.vite')) {
-        target = `http://localhost:${viteInternalPort}`
-      } else {
-        target = `http://localhost:${astroInternalPort}`
+        try {
+          return await fetch(`http://localhost:${apiPort}${url.pathname}${url.search}`, {
+            method: req.method,
+            headers: req.headers,
+            body: req.body,
+            // @ts-ignore
+            duplex: 'half',
+          })
+        } catch {
+          return new Response('API not ready', { status: 502 })
+        }
       }
 
+      // Admin routes → serve pre-built static files
+      if (url.pathname === '/admin') {
+        return Response.redirect(`${url.origin}/admin/`, 301)
+      }
+      if (url.pathname.startsWith('/admin/')) {
+        const reqPath = url.pathname.replace(/^\/admin/, '')
+        const filePath = join(adminDistPath, reqPath)
+        const file = Bun.file(filePath)
+
+        if (await file.exists()) {
+          return new Response(file)
+        }
+
+        // SPA fallback
+        return new Response(Bun.file(join(adminDistPath, 'index.html')), {
+          headers: { 'Content-Type': 'text/html' },
+        })
+      }
+
+      // Install route → also serve admin SPA (installer is a route within the SPA)
+      if (url.pathname === '/install' || url.pathname.startsWith('/install/')) {
+        return new Response(Bun.file(join(adminDistPath, 'index.html')), {
+          headers: { 'Content-Type': 'text/html' },
+        })
+      }
+
+      // Everything else → Astro frontend
       try {
-        const proxyUrl = `${target}${url.pathname}${url.search}`
-        return await fetch(proxyUrl, {
+        return await fetch(`http://localhost:${astroInternalPort}${url.pathname}${url.search}`, {
           method: req.method,
           headers: req.headers,
           body: req.body,
-          // @ts-ignore — Bun supports duplex for streaming request bodies
+          // @ts-ignore
           duplex: 'half',
         })
       } catch {
-        return new Response('Service not ready', { status: 502 })
+        return new Response('Frontend not ready', { status: 502 })
       }
     },
   })
@@ -157,7 +196,6 @@ export async function dev() {
   // Handle shutdown
   const cleanup = () => {
     apiProc.kill()
-    adminProc.kill()
     frontendProc.kill()
     proxy.stop()
     process.exit(0)
