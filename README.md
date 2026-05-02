@@ -28,7 +28,7 @@ That's it. One command starts Postgres, Redis, runs migrations, seeds an admin u
 Open **http://localhost:3001/admin** and log in:
 
 ```
-Email:    admin@cms.local
+Email:    cms-admin@kritano.com
 Password: admin
 ```
 

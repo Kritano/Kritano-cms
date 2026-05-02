@@ -25,7 +25,7 @@ Bun workspaces monorepo. All code is TypeScript — no JavaScript files.
 bun run packages/cli/src/index.ts dev
 ```
 
-This single command: starts Docker Compose, creates initial migration, applies migrations, seeds admin user (`admin@cms.local` / `admin`), generates types, starts API on `:3000`, starts admin UI on `:3001`.
+This single command: starts Docker Compose, creates initial migration, applies migrations, seeds admin user (`cms-admin@kritano.com` / `admin`), generates types, starts API on `:3000`, starts admin UI on `:3001`.
 
 - Admin: http://localhost:3001/admin
 - API: http://localhost:3000/api/health

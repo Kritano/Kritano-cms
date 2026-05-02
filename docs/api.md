@@ -22,7 +22,7 @@ POST /api/auth/login
 
 ```json
 {
-  "email": "admin@cms.local",
+  "email": "cms-admin@kritano.com",
   "password": "admin"
 }
 ```
@@ -33,7 +33,7 @@ POST /api/auth/login
 {
   "user": {
     "id": "uuid",
-    "email": "admin@cms.local",
+    "email": "cms-admin@kritano.com",
     "name": null,
     "createdAt": "2026-04-28T12:00:00.000Z",
     "updatedAt": "2026-04-28T12:00:00.000Z"
@@ -79,7 +79,7 @@ Authorization: Bearer <access-token>
 {
   "data": {
     "id": "uuid",
-    "email": "admin@cms.local",
+    "email": "cms-admin@kritano.com",
     "name": null,
     "createdAt": "2026-04-28T12:00:00.000Z",
     "updatedAt": "2026-04-28T12:00:00.000Z"

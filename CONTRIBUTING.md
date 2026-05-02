@@ -19,7 +19,7 @@ bun install
 bun run packages/cli/src/index.ts dev
 ```
 
-This starts PostgreSQL + Redis via Docker, runs migrations, seeds an admin user (`admin@cms.local` / `admin`), and launches the API server on port 3000 and admin UI on port 3001.
+This starts PostgreSQL + Redis via Docker, runs migrations, seeds an admin user (`cms-admin@kritano.com` / `admin`), and launches the API server on port 3000 and admin UI on port 3001.
 
 ### Running tests
 

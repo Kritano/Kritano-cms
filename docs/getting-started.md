@@ -134,7 +134,7 @@ The CMS handles everything from here:
 Go to **http://localhost:3006/admin**
 
 ```
-Email:    admin@cms.local
+Email:    cms-admin@kritano.com
 Password: admin
 ```
 

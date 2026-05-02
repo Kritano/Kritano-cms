@@ -29,12 +29,24 @@ async function ensureInitialMigration() {
 async function ensureAdminUser() {
   const sql = getClient()
   try {
-    const existing = await sql`SELECT id FROM users WHERE email = 'admin@cms.local' LIMIT 1`
+    const existing = await sql`SELECT id FROM users WHERE email = 'cms-admin@kritano.com' LIMIT 1`
     if (existing.length > 0) return
 
     const hash = await bcrypt.hash('admin', 10)
-    await sql`INSERT INTO users (email, password_hash, name) VALUES ('admin@cms.local', ${hash}, 'Admin')`
-    log.success('Admin user created → admin@cms.local / admin')
+    const userRows = await sql`INSERT INTO users (email, password_hash, name) VALUES ('cms-admin@kritano.com', ${hash}, 'Admin') RETURNING id`
+    const userId = (userRows[0] as Record<string, unknown>).id as string
+
+    // Ensure super_admin role exists and assign it
+    const roleRows = await sql`
+      INSERT INTO roles (name, permissions)
+      VALUES ('super_admin', '{"*": true}'::jsonb)
+      ON CONFLICT (name) DO UPDATE SET name = 'super_admin'
+      RETURNING id
+    `
+    const roleId = (roleRows[0] as Record<string, unknown>).id as string
+    await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId}) ON CONFLICT DO NOTHING`
+
+    log.success('Admin user created → cms-admin@kritano.com / admin')
   } catch {
     // Table may not exist yet on very first run — that's ok, migration will create it
   }
@@ -109,7 +121,7 @@ export async function dev() {
   log.url('GraphQL', `http://localhost:${apiPort}/api/graphql`)
   log.url('Health', `http://localhost:${apiPort}/api/health`)
   console.log('')
-  log.info('Login: admin@cms.local / admin')
+  log.info('Login: cms-admin@kritano.com / admin')
   console.log('')
 
   // 7. Start API server with --watch (server.ts is in the CMS package)
