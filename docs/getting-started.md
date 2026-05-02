@@ -1,12 +1,6 @@
 # Getting Started
 
-Kritano CMS is a schema-first content management system. You define your content types in code, and the CMS generates the database, API, admin UI, and frontend from that definition.
-
-## Not a developer?
-
-If you'd rather skip the terminal entirely, the browser installer gets you running with one command on your server.
-
-[Browser installer guide](./installation.md#browser-installer)
+Set up a new site using Kritano CMS.
 
 ---
 
@@ -15,238 +9,291 @@ If you'd rather skip the terminal entirely, the browser installer gets you runni
 - [Bun](https://bun.sh) — install with `curl -fsSL https://bun.sh/install | bash`
 - [Docker Desktop](https://docker.com/products/docker-desktop) — must be running before you start
 
-## Install
+---
+
+## Quick start
+
+### 1. Create your project
 
 ```bash
-bun install -g @kritano/cms
-cms create my-site
-cd my-site
-bun run dev
+mkdir my-site && cd my-site
+git init
 ```
 
-That's it. Three commands to a running site.
+### 2. Create `package.json`
 
-`cms create` scaffolds a new project, installs the CMS as a dependency, generates secure secrets, sets up the database, and seeds sample content. Your site is ready at:
-
-- **Admin** — http://localhost:3006/admin
-- **Site** — http://localhost:3006
-
-Login: `admin@cms.local` / `admin` — change this immediately.
-
-### Without global install
-
-```bash
-bunx @kritano/create-cms my-site
-cd my-site
-bun run dev
+```json
+{
+  "name": "my-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cms dev",
+    "build": "cms build",
+    "migrate": "cms migrate",
+    "generate": "cms generate"
+  },
+  "dependencies": {
+    "@kritano/cms": "github:Kritano/Kritano-cms#main"
+  }
+}
 ```
 
-### Starter templates
+### 3. Create `cms.config.ts`
 
-```bash
-cms create my-site --starter default     # Pages + articles (clean slate)
-cms create my-site --starter blog        # Blog with categories, tags, authors
-cms create my-site --starter portfolio   # Projects, case studies, about
-cms create my-site --starter business    # Pages, blog, team, services, testimonials
-```
-
-Run `cms create my-site` without `--starter` for an interactive prompt.
-
-## Start
-
-```bash
-bun run dev
-```
-
-This starts PostgreSQL and Redis via Docker Compose, runs migrations, and launches the API server, admin UI, and frontend through a single proxy at **http://localhost:3006**.
-
-## What you have
-
-```
-my-site/
-├── cms.config.ts       ← Your content schema — the main file you edit
-├── package.json        ← @kritano/cms as a versioned dependency
-├── .env                ← Environment config (never committed)
-├── .gitignore
-├── bun.lock            ← Commit this — it pins your CMS version
-├── migrations/         ← Auto-generated SQL — commit these
-├── media/              ← Uploaded files (not committed)
-└── themes/             ← Custom theme (optional)
-```
-
-The CMS lives entirely inside `node_modules/@kritano/cms`. Your files are 100% yours — a CMS update never touches your schema, theme, or content.
-
-## Customise your content types
-
-Open `cms.config.ts`. This is the source of truth for your content model:
+This is the source of truth for your content model. Define your collections here:
 
 ```typescript
 import {
-  defineConfig, defineCollection,
-  text, slug, richText, select, media, seoBlock
+  defineConfig,
+  defineCollection,
+  text, slug, richText, textarea,
+  select, media, datetime, seoBlock,
 } from '@kritano/cms/core'
 
 export default defineConfig({
   site: {
     name: 'My Site',
-    domain: 'https://example.com',
+    domain: 'http://localhost:3006',
     language: 'en',
   },
   collections: [
-    defineCollection('article', {
+    defineCollection('page', {
       fields: {
         title:  text().required(),
         slug:   slug().from('title'),
         body:   richText(),
-        image:  media(),
         status: select(['draft', 'published']).default('draft'),
         seo:    seoBlock(),
+      },
+    }),
+    defineCollection('article', {
+      fields: {
+        title:         text().required(),
+        slug:          slug().from('title'),
+        body:          richText(),
+        excerpt:       textarea().maxLength(300),
+        featuredImage: media(),
+        publishedAt:   datetime().nullable(),
+        status:        select(['draft', 'published']).default('draft'),
+        seo:           seoBlock(),
       },
     }),
   ],
 })
 ```
 
-Save the file and `bun run dev` automatically applies migrations and regenerates types.
+### 4. Create `.env`
 
-## All field types
+```env
+DATABASE_URL=postgresql://cms:cms@localhost:5432/cms
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=CHANGE_ME_run_openssl_rand_base64_32
+REFRESH_TOKEN_SECRET=CHANGE_ME_run_openssl_rand_base64_32
+SITE_URL=http://localhost:3006
+ADMIN_URL=http://localhost:3006/admin
+MEDIA_PATH=./media
+CMS_UPDATE_CHANNEL=development
+```
 
-| Field | Usage | Description |
-|-------|-------|-------------|
-| `text()` | `text().required().min(3)` | Single-line text |
-| `textarea()` | `textarea().maxLength(300)` | Multi-line text |
-| `richText()` | `richText()` | Visual/Markdown/Split editor |
-| `slug()` | `slug().from('title')` | URL slug, auto-generates |
-| `url()` | `url().nullable()` | URL field |
-| `number()` | `number().min(0).integer()` | Numeric value |
-| `boolean()` | `boolean().default(false)` | True/false toggle |
-| `datetime()` | `datetime().nullable()` | Date and time picker |
-| `select()` | `select(['a', 'b'])` | Single select |
-| `multiSelect()` | `multiSelect(['a', 'b'])` | Multiple select |
-| `media()` | `media()` | Image/file upload |
-| `relation()` | `relation('author')` | Link to another collection |
-| `array()` | `array(text())` | Array of any field type |
-| `colour()` | `colour()` | Colour picker |
-| `blocks()` | `blocks([block('hero', {...})])` | Flexible content blocks |
-| `seoBlock()` | `seoBlock()` | SEO meta fields |
+Generate real secrets:
+
+```bash
+openssl rand -base64 32
+```
+
+Run that twice — one for `JWT_SECRET`, one for `REFRESH_TOKEN_SECRET`. Paste the output into `.env`.
+
+### 5. Create `.gitignore`
+
+```
+node_modules/
+dist/
+.env
+media/
+*.local
+```
+
+### 6. Install and run
+
+```bash
+bun install
+bun run dev
+```
+
+The CMS handles everything from here:
+
+- Starts Postgres and Redis via Docker Compose
+- Runs database migrations from your schema
+- Seeds an admin user
+- Generates TypeScript types
+- Starts the API server, admin UI, and frontend
+
+### 7. Open the admin
+
+Go to **http://localhost:3006/admin**
+
+```
+Email:    admin@cms.local
+Password: admin
+```
+
+Change this immediately after first login.
+
+---
+
+## What's running
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Admin | http://localhost:3006/admin | Content management UI |
+| Frontend | http://localhost:3006 | Your site (default theme) |
+| API | http://localhost:3005/api | REST API |
+| GraphQL | http://localhost:3005/api/graphql | GraphQL endpoint |
+| Health | http://localhost:3005/api/health | Health check |
+
+---
+
+## Your project structure
+
+```
+my-site/
+├── cms.config.ts       ← Your content schema — the main file you edit
+├── package.json        ← CMS as a dependency
+├── .env                ← Environment config (never commit this)
+├── .gitignore
+├── bun.lock            ← Commit this — pins your CMS version
+├── migrations/         ← Auto-generated SQL (commit these)
+├── media/              ← Uploaded files (not committed)
+└── node_modules/       ← CMS lives here — never edit
+```
+
+Your files are yours. A CMS update (`bun update @kritano/cms`) only changes `node_modules` and `bun.lock` — your schema, theme, and content are never touched.
+
+---
+
+## Available field types
+
+| Field | Import | Example |
+|-------|--------|---------|
+| `text()` | `text` | `text().required().min(3).max(100)` |
+| `textarea()` | `textarea` | `textarea().maxLength(300)` |
+| `richText()` | `richText` | `richText()` |
+| `slug()` | `slug` | `slug().from('title')` |
+| `url()` | `url` | `url().nullable()` |
+| `number()` | `number` | `number().min(0).integer()` |
+| `boolean()` | `boolean` | `boolean().default(false)` |
+| `datetime()` | `datetime` | `datetime().nullable()` |
+| `select()` | `select` | `select(['draft', 'published']).default('draft')` |
+| `multiSelect()` | `multiSelect` | `multiSelect(['a', 'b', 'c'])` |
+| `media()` | `media` | `media()` |
+| `relation()` | `relation` | `relation('author')` |
+| `array()` | `array` | `array(text())` |
+| `colour()` | `colour` | `colour()` |
+| `blocks()` | `blocks, block` | See below |
+| `seoBlock()` | `seoBlock` | `seoBlock()` |
 
 All fields are chainable: `text().required().min(3).max(100)`
 
-## Page builder blocks
+---
+
+## Adding collections
+
+Add a new collection to `cms.config.ts`:
 
 ```typescript
-content: blocks([
-  block('hero', {
-    heading: text().required(),
-    subheading: text(),
-    image: media(),
-    ctaUrl: url(),
-  }),
-  block('text-block', {
-    body: richText(),
-  }),
-])
+defineCollection('project', {
+  fields: {
+    title:       text().required(),
+    slug:        slug().from('title'),
+    description: richText(),
+    url:         url().nullable(),
+    tags:        array(text()),
+    images:      array(media()),
+    status:      select(['draft', 'published']).default('draft'),
+  },
+}),
 ```
 
-## Build your theme
+Save and run `bun run dev` — the migration runs automatically, the new collection appears in the admin and API.
 
-The default theme works out of the box. To customise, create a theme directory and register it in `cms.config.ts`. See [Themes](themes.md) for the full guide.
+---
 
-## Use the API from any frontend
+## Using the API
 
 ```typescript
 import { CMSClient } from '@kritano/cms/sdk'
 
-const cms = new CMSClient({ url: 'https://mysite.com/api' })
+const cms = new CMSClient({ url: 'http://localhost:3005/api' })
 
+// List published articles
 const articles = await cms.collection('article').findMany({
   where: { status: 'published' },
   orderBy: { publishedAt: 'desc' },
+  limit: 10,
 })
 
+// Get by slug
 const article = await cms.collection('article').findOne({
   where: { slug: 'hello-world' },
 })
 ```
 
-## Connect Kritano
+Or use REST directly:
 
-Free site health scoring — SEO, accessibility, performance, and AI visibility. Connect from **Admin → Site Health**.
-
-## Deploy to a live server
-
-Go to **Admin → Deployment → Setup**, fill in your server details, and generate a setup script. See [Deployment](deployment.md).
-
-## Auto-deploy on push
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /var/my-site
-            git pull origin main
-            bun install && bun run migrate && bun run build
-            systemctl restart cms-api cms-worker
+```bash
+curl http://localhost:3005/api/articles?status=published
+curl http://localhost:3005/api/articles/slug/hello-world
 ```
 
-## Keeping up to date
+---
+
+## Updating the CMS
 
 ```bash
 bun update @kritano/cms
-bun run migrate
-bun run dev                # test locally
+bun run dev                # runs any new migrations automatically
 git add bun.lock && git commit -m "chore: update cms"
 git push
 ```
 
-The admin shows a notification when updates are available at **Deployment → Updates**.
+The admin shows a notification at **Deployment → Updates** when a new version is available.
+
+---
 
 ## Day-to-day workflow
 
 1. Edit `cms.config.ts` to add or change collections
-2. Run `bun run dev` — migrations and types auto-update
-3. Create content in the admin
+2. Run `bun run dev` — migrations and types update automatically
+3. Create and publish content in the admin
 4. Push to deploy
 
-## What's running locally
-
-| Port | Service |
-|------|---------|
-| 3005 | API server (REST + GraphQL) |
-| 3006 | Proxy — admin at `/admin`, frontend at `/` |
+---
 
 ## Troubleshooting
 
-**Docker not running:** Make sure Docker Desktop is open before running `bun run dev`.
+**Docker not running:** Docker Desktop must be open before `bun run dev`. The CMS needs Postgres and Redis.
 
-**Port already in use:** Set `PORT=3010 DEV_PORT=3011` in `.env`.
+**Port already in use:** Set `PORT=3010` and `DEV_PORT=3011` in `.env`.
 
-**Migrations failed:** Run `bun run migrate` manually. To reset: `docker compose down -v` and restart.
+**Migrations failed:** Run `bun run migrate` manually. To fully reset: `docker compose down -v` then `bun run dev` again.
 
-**"Cannot find module":** Run `bun install`.
+**"Cannot find module":** Run `bun install` to ensure dependencies are installed.
+
+**Admin not loading:** Clear browser cache. Check the terminal for errors.
+
+---
 
 ## Next steps
 
 - [Installation paths](installation.md) — developer, browser installer, manual
 - [Updating](updating.md) — keeping the CMS up to date
-- [Collections](collections.md) — field types and schema DSL
+- [Collections](collections.md) — all field types and the schema DSL
 - [Editor](editor.md) — visual, markdown, and split modes
-- [API reference](api.md) — REST and GraphQL
+- [API reference](api.md) — REST and GraphQL documentation
 - [Themes](themes.md) — build an Astro theme
-- [Deployment](deployment.md) — deploy to production
+- [Deployment](deployment.md) — deploy to a production server
 - [Plugins](plugins/using-plugins.md) — extend the CMS
-- [Search](search.md) — full-text search
+- [Search](search.md) — full-text search with Typesense
 - [OAuth](oauth.md) — Google and GitHub login
-- [Live preview](preview.md) — preview drafts
+- [Live preview](preview.md) — preview draft content
