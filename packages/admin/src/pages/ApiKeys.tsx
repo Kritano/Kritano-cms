@@ -39,9 +39,10 @@ export function ApiKeys() {
   const [expiresAt, setExpiresAt] = useState('')
   const [error, setError] = useState('')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error: queryError } = useQuery({
     queryKey: ['api-keys'],
     queryFn: () => api<{ data: ApiKey[] }>('/admin/api-keys'),
+    retry: false,
   })
 
   const createMutation = useMutation({
@@ -182,6 +183,12 @@ export function ApiKeys() {
       )}
 
       {/* Keys list */}
+      {queryError && (
+        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+          Failed to load API keys: {(queryError as any).message || 'Unknown error'}
+        </div>
+      )}
+
       {isLoading && (
         <div className="py-8 text-center text-sm text-gray-500">Loading...</div>
       )}
@@ -220,16 +227,16 @@ export function ApiKeys() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      {key.permissions.map((scope) => (
+                      {(Array.isArray(key.permissions) ? key.permissions : []).map((scope) => (
                         <Badge key={scope}>{scope.replace(':', ' ')}</Badge>
                       ))}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500">
-                    {key.last_used ? formatDate(key.last_used) : 'Never'}
+                    {key.last_used ? formatDate(String(key.last_used)) : 'Never'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500">
-                    {key.expires_at ? formatDate(key.expires_at) : 'Never'}
+                    {key.expires_at ? formatDate(String(key.expires_at)) : 'Never'}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
