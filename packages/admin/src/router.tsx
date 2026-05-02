@@ -32,9 +32,7 @@ import { FormList } from '@/pages/forms/FormList'
 import { FormBuilder } from '@/pages/forms/FormBuilder'
 import { FormSubmissions } from '@/pages/forms/FormSubmissions'
 
-// TODO: In future tasks, these will come from the CMS config API
-// For now, hardcode the collections from the blueprint
-const COLLECTIONS = ['page', 'article', 'project']
+// Collections are now fetched dynamically from the API by AppLayout and Dashboard
 
 // Root route
 const rootRoute = createRootRoute({
@@ -69,14 +67,14 @@ const authLayoutRoute = createRoute({
       throw redirect({ to: '/admin/login' })
     }
   },
-  component: () => <AppLayout collections={COLLECTIONS} title="Dashboard" />,
+  component: () => <AppLayout title="Dashboard" />,
 })
 
 // Dashboard
 const dashboardRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: '/admin',
-  component: () => <Dashboard collections={COLLECTIONS} />,
+  component: () => <Dashboard />,
 })
 
 // Collection list

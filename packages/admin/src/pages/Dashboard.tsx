@@ -1,13 +1,22 @@
 import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
 import { UpdateBanner } from '@/components/UpdateBanner'
+import { api } from '@/lib/api'
 
 interface DashboardProps {
-  collections: string[]
+  collections?: string[]
 }
 
-export function Dashboard({ collections }: DashboardProps) {
+export function Dashboard({ collections: propCollections }: DashboardProps) {
+  const { data: schemaData } = useQuery({
+    queryKey: ['cms-schema'],
+    queryFn: () => api<{ collections: Array<{ name: string }> }>('/admin/schema'),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const collections = schemaData?.collections?.map((c) => c.name) ?? propCollections ?? []
   return (
     <div className="space-y-6">
       <UpdateBanner />

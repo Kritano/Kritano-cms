@@ -49,6 +49,17 @@ export function createApiRouter(config: CmsConfig): Hono {
   api.route('/api', previewRoutes)
   api.route('/api', updateRoutes)
 
+  // Config/schema endpoint — admin fetches this to know what collections exist
+  api.get('/api/admin/schema', (c) => {
+    return c.json({
+      site: config.site,
+      collections: config.collections.map((col) => ({
+        name: col.name,
+        fields: col.fields,
+      })),
+    })
+  })
+
   // Auto-generated collection routes
   for (const collection of config.collections) {
     api.route('/api', createCollectionRoutes(collection))

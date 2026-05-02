@@ -9,9 +9,6 @@ import { Editor } from '@/components/editor/Editor'
 import { BlockBuilder } from '@/components/blocks/BlockBuilder'
 import { EditorSidebar } from '@/components/sidebar/EditorSidebar'
 
-// Collection schemas — hardcoded for v0.1, will come from config API later
-import { COLLECTION_SCHEMAS } from './schemas'
-
 interface Props {
   collection: string
   id?: string // undefined = new document
@@ -26,8 +23,15 @@ export function DocumentEditor({ collection, id }: Props) {
   const [docId, setDocId] = useState<string | undefined>(id)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const schema = COLLECTION_SCHEMAS[collection]
-  if (!schema) return <div className="text-sm text-red-500">Unknown collection: {collection}</div>
+  // Fetch collection schemas from the API (dynamic — matches consumer's cms.config.ts)
+  const { data: schemaData } = useQuery({
+    queryKey: ['cms-schema'],
+    queryFn: () => api<{ collections: Array<{ name: string; fields: Record<string, FieldDefinition> }> }>('/admin/schema'),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const schema = schemaData?.collections?.find((c) => c.name === collection)
+  if (!schema) return <div className="py-8 text-center text-sm text-gray-500">Loading...</div>
 
   const hasSeo = Object.values(schema.fields).some((f) => (f as FieldDefinition).type === 'seoBlock')
 
