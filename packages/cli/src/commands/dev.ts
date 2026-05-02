@@ -26,30 +26,77 @@ async function ensureInitialMigration() {
   }
 }
 
+async function ensureDefaultRoles() {
+  const sql = getClient()
+  try {
+    const defaultRoles = [
+      { name: 'super_admin', permissions: { '*': true } },
+      { name: 'admin', permissions: { content: true, media: true, users: true, settings: true, forms: true, redirects: true, webhooks: true, deployment: true } },
+      { name: 'editor', permissions: { content: { read: true, create: true, update: true, publish: true }, media: { read: true, upload: true }, forms: true } },
+      { name: 'author', permissions: { content: { read: true, create: true, update_own: true }, media: { read: true, upload: true } } },
+      { name: 'contributor', permissions: { content: { read: true, create: true }, media: { read: true } } },
+      { name: 'viewer', permissions: { content: { read: true }, media: { read: true } } },
+    ]
+
+    for (const role of defaultRoles) {
+      await sql`
+        INSERT INTO roles (name, permissions)
+        VALUES (${role.name}, ${JSON.stringify(role.permissions)}::jsonb)
+        ON CONFLICT (name) DO NOTHING
+      `
+    }
+  } catch {
+    // roles table may not exist yet
+  }
+}
+
 async function ensureAdminUser() {
   const sql = getClient()
   try {
-    const existing = await sql`SELECT id FROM users WHERE email = 'cms-admin@kritano.com' LIMIT 1`
-    if (existing.length > 0) return
+    // Check if ANY user exists — if so, don't create another admin
+    const anyUser = await sql`SELECT id FROM users LIMIT 1`
+    if (anyUser.length > 0) {
+      // Still ensure they have a role
+      await ensureAdminHasRole(sql)
+      return
+    }
 
     const hash = await bcrypt.hash('admin', 10)
     const userRows = await sql`INSERT INTO users (email, password_hash, name) VALUES ('cms-admin@kritano.com', ${hash}, 'Admin') RETURNING id`
     const userId = (userRows[0] as Record<string, unknown>).id as string
 
-    // Ensure super_admin role exists and assign it
-    const roleRows = await sql`
-      INSERT INTO roles (name, permissions)
-      VALUES ('super_admin', '{"*": true}'::jsonb)
-      ON CONFLICT (name) DO UPDATE SET name = 'super_admin'
-      RETURNING id
-    `
-    const roleId = (roleRows[0] as Record<string, unknown>).id as string
-    await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId}) ON CONFLICT DO NOTHING`
+    // Assign super_admin role
+    const roleRows = await sql`SELECT id FROM roles WHERE name = 'super_admin' LIMIT 1`
+    if (roleRows.length > 0) {
+      const roleId = (roleRows[0] as Record<string, unknown>).id as string
+      await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId}) ON CONFLICT DO NOTHING`
+    }
 
     log.success('Admin user created → cms-admin@kritano.com / admin')
   } catch {
     // Table may not exist yet on very first run — that's ok, migration will create it
   }
+}
+
+async function ensureAdminHasRole(sql: ReturnType<typeof getClient>) {
+  try {
+    // Find users with no roles and assign super_admin
+    const usersWithoutRoles = await sql`
+      SELECT u.id FROM users u
+      LEFT JOIN user_roles ur ON ur.user_id = u.id
+      WHERE ur.role_id IS NULL
+    `
+    if (usersWithoutRoles.length === 0) return
+
+    const roleRows = await sql`SELECT id FROM roles WHERE name = 'super_admin' LIMIT 1`
+    if (roleRows.length === 0) return
+
+    const roleId = (roleRows[0] as Record<string, unknown>).id as string
+    for (const user of usersWithoutRoles) {
+      const userId = (user as Record<string, unknown>).id as string
+      await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId}) ON CONFLICT DO NOTHING`
+    }
+  } catch {}
 }
 
 export async function dev() {
@@ -84,7 +131,10 @@ export async function dev() {
     log.warn(`Migration failed: ${err.message}`)
   }
 
-  // 5. Seed admin user if needed
+  // 5. Seed default roles
+  await ensureDefaultRoles()
+
+  // 6. Seed admin user if needed
   await ensureAdminUser()
 
   // 6. Generate types
