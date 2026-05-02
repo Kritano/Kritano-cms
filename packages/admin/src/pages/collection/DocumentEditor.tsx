@@ -205,7 +205,7 @@ export function DocumentEditor({ collection, id }: Props) {
                   {name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')}
                 </label>
                 <BlockBuilder
-                  blockDefs={f.blocks}
+                  blockDefs={f.blocks || []}
                   value={(fields[name] || []) as Block[]}
                   onChange={(val) => updateField(name, val)}
                 />

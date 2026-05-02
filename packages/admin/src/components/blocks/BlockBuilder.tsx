@@ -25,7 +25,9 @@ interface Props {
   onChange: (value: Block[]) => void
 }
 
-export function BlockBuilder({ blockDefs, value = [], onChange }: Props) {
+export function BlockBuilder({ blockDefs: rawBlockDefs, value: rawValue, onChange }: Props) {
+  const blockDefs = Array.isArray(rawBlockDefs) ? rawBlockDefs : []
+  const value = Array.isArray(rawValue) ? rawValue : []
   const [pickerOpen, setPickerOpen] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 

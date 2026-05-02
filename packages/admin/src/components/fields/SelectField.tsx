@@ -5,7 +5,8 @@ interface Props {
   options: string[]
 }
 
-export function SelectField({ label, value, onChange, options }: Props) {
+export function SelectField({ label, value, onChange, options: rawOptions }: Props) {
+  const options = Array.isArray(rawOptions) ? rawOptions : []
   return (
     <div className="space-y-1.5">
       <label className="block text-sm font-medium text-gray-700">{label}</label>

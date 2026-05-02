@@ -5,7 +5,9 @@ interface Props {
   options: string[]
 }
 
-export function MultiSelectField({ label, value = [], onChange, options }: Props) {
+export function MultiSelectField({ label, value: rawValue, onChange, options: rawOptions }: Props) {
+  const value = Array.isArray(rawValue) ? rawValue : []
+  const options = Array.isArray(rawOptions) ? rawOptions : []
   function toggle(opt: string) {
     if (value.includes(opt)) {
       onChange(value.filter((v) => v !== opt))

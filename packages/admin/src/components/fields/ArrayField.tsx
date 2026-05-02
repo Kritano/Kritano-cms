@@ -8,7 +8,8 @@ interface Props {
   onChange: (value: unknown[]) => void
 }
 
-export function ArrayField({ label, value = [], onChange }: Props) {
+export function ArrayField({ label, value: rawValue, onChange }: Props) {
+  const value = Array.isArray(rawValue) ? rawValue : []
   function addItem() {
     onChange([...value, ''])
   }
