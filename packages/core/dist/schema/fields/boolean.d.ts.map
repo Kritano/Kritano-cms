@@ -1,0 +1,1 @@
+{"version":3,"file":"boolean.d.ts","sourceRoot":"","sources":["../../../src/schema/fields/boolean.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,mBAAmB,EAAE,MAAM,YAAY,CAAA;AACrD,OAAO,EAAE,YAAY,EAAE,MAAM,WAAW,CAAA;AAExC,qBAAa,mBAAoB,SAAQ,YAAY,CAAC,mBAAmB,CAAC;;CAIzE;AAED,wBAAgB,OAAO,IAAI,mBAAmB,CAE7C"}

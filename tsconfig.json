@@ -17,8 +17,8 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@kritano/cms/core": ["./packages/core/src/index.ts"],
-      "@kritano/cms/types": ["./packages/types/dist/index.d.ts"],
-      "@kritano/cms/sdk": ["./packages/sdk/dist/index.d.ts"],
+      "@kritano/cms/types": ["./packages/types/dist/index.d.ts", "./packages/types/src/index.ts"],
+      "@kritano/cms/sdk": ["./packages/sdk/dist/index.d.ts", "./packages/sdk/src/index.ts"],
       "@kritano/cms/astro": ["./packages/astro/src/index.ts"],
       "@kritano/cms/cli": ["./packages/cli/src/index.ts"],
       "@kritano/cms/mcp": ["./packages/mcp/src/index.ts"]

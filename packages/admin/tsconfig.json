@@ -15,8 +15,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@kritano/cms/core": ["../core/src/index.ts"],
-      "@kritano/cms/types": ["../types/dist/index.d.ts"],
-      "@kritano/cms/sdk": ["../sdk/dist/index.d.ts"]
+      "@kritano/cms/types": ["../types/dist/index.d.ts", "../types/src/index.ts"],
+      "@kritano/cms/sdk": ["../sdk/dist/index.d.ts", "../sdk/src/index.ts"]
     }
   },
   "include": ["src"]

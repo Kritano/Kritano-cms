@@ -1,0 +1,2 @@
+export declare const redirectMiddleware: import("hono").MiddlewareHandler<any, string, {}, Response & import("hono").TypedResponse<undefined, 301 | 302, "redirect">>;
+//# sourceMappingURL=redirects.d.ts.map

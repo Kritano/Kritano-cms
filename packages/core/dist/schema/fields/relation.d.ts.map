@@ -1,0 +1,1 @@
+{"version":3,"file":"relation.d.ts","sourceRoot":"","sources":["../../../src/schema/fields/relation.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,oBAAoB,EAAE,MAAM,YAAY,CAAA;AACtD,OAAO,EAAE,YAAY,EAAE,MAAM,WAAW,CAAA;AAExC,qBAAa,oBAAqB,SAAQ,YAAY,CAAC,oBAAoB,CAAC;gBAC9D,MAAM,EAAE,MAAM;CAG3B;AAED,wBAAgB,QAAQ,CAAC,MAAM,EAAE,MAAM,GAAG,oBAAoB,CAE7D"}
