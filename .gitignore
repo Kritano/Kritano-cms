@@ -1,5 +1,5 @@
 node_modules/
-packages/admin/dist/
+dist/
 .env
 .env.local
 *.log
