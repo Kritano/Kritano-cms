@@ -1,9 +1,13 @@
 #!/usr/bin/env bun
 
-import config from './cms.config'
-import { createServer } from '@kritano/cms/core'
+import { resolve } from 'node:path'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
+import { createServer } from '@kritano/cms/core'
+
+// Load config from the project root (process.cwd), not the CMS package
+const configPath = resolve(process.cwd(), 'cms.config')
+const { default: config } = await import(configPath)
 
 const app = createServer(config)
 const port = parseInt(process.env.PORT || '3000', 10)

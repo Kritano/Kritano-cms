@@ -119,8 +119,11 @@ export async function dev() {
     env: { ...process.env, PORT: apiPort },
   })
 
-  // 8. Start Astro frontend dev server (themes/default is in the CMS package)
-  const themeDir = resolve(cmsRoot, 'themes/default')
+  // 8. Start Astro frontend dev server — use project root if it has its own Astro setup, otherwise default theme
+  const hasCustomTheme = existsSync(resolve(projectRoot, 'astro.config.mjs')) ||
+                         existsSync(resolve(projectRoot, 'astro.config.ts')) ||
+                         existsSync(resolve(projectRoot, 'src/pages'))
+  const themeDir = hasCustomTheme ? projectRoot : resolve(cmsRoot, 'themes/default')
   const frontendProc = Bun.spawn(['bunx', 'astro', 'dev', '--port', astroInternalPort], {
     cwd: themeDir,
     stdio: ['inherit', 'inherit', 'inherit'],
