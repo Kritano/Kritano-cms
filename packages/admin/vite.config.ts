@@ -24,6 +24,12 @@ export default defineConfig({
       ...(process.env.VITE_INTERNAL_PORT ? { clientPort: parseInt(process.env.VITE_INTERNAL_PORT) } : {}),
     },
   },
+  optimizeDeps: {
+    include: [
+      'use-sync-external-store/shim',
+      'use-sync-external-store/shim/with-selector',
+    ],
+  },
   build: {
     outDir: 'dist',
   },
