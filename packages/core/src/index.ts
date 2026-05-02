@@ -1,3 +1,6 @@
+// Installer
+export { isConfigured, installerGuard, installerRoutes } from './installer'
+
 // Schema DSL
 export { defineConfig } from './schema/defineConfig'
 export { defineCollection } from './schema/defineCollection'

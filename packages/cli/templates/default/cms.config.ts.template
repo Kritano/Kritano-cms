@@ -1,0 +1,59 @@
+import {
+  defineConfig,
+  defineCollection,
+  text,
+  slug,
+  richText,
+  select,
+  media,
+  datetime,
+  seoBlock,
+  blocks,
+  block,
+  url,
+  textarea,
+} from '@kritano/cms/core'
+
+export default defineConfig({
+  site: {
+    name: '{{SITE_NAME}}',
+    domain: 'http://localhost:3006',
+    language: 'en',
+  },
+  collections: [
+    defineCollection('page', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        content: blocks([
+          block('hero', {
+            heading: text().required(),
+            subheading: text(),
+            image: media(),
+            ctaLabel: text(),
+            ctaUrl: url(),
+          }),
+          block('text-block', {
+            body: richText(),
+          }),
+        ]),
+        featuredImage: media(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('article', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        excerpt: textarea().maxLength(300),
+        featuredImage: media(),
+        publishedAt: datetime().nullable(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+  ],
+})

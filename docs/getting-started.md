@@ -1,51 +1,89 @@
-# Kritano CMS — Getting Started
+# Getting Started
 
-Start a new site using Kritano CMS as a dependency.
+Kritano CMS is a schema-first content management system. You define your content types in code, and the CMS generates the database, API, admin UI, and frontend from that definition.
+
+## Not a developer?
+
+If you'd rather skip the terminal entirely, the browser installer gets you running with one command on your server.
+
+[Browser installer guide](./installation.md#browser-installer)
 
 ---
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) installed
-- [Docker Desktop](https://docker.com) installed and running
+- [Bun](https://bun.sh) — install with `curl -fsSL https://bun.sh/install | bash`
+- [Docker Desktop](https://docker.com/products/docker-desktop) — must be running before you start
 
----
-
-## 1. Create your project
+## Install
 
 ```bash
-mkdir my-site && cd my-site
-git init
+bun install -g @kritano/cms
+cms create my-site
+cd my-site
+bun run dev
 ```
 
-## 2. Create `package.json`
+That's it. Three commands to a running site.
 
-```json
-{
-  "name": "my-site",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "cms dev",
-    "build": "cms build",
-    "migrate": "cms migrate"
-  },
-  "dependencies": {
-    "@kritano/cms": "github:Kritano/Kritano-cms#main"
-  }
-}
+`cms create` scaffolds a new project, installs the CMS as a dependency, generates secure secrets, sets up the database, and seeds sample content. Your site is ready at:
+
+- **Admin** — http://localhost:3006/admin
+- **Site** — http://localhost:3006
+
+Login: `admin@cms.local` / `admin` — change this immediately.
+
+### Without global install
+
+```bash
+bunx @kritano/create-cms my-site
+cd my-site
+bun run dev
 ```
 
-## 3. Create `cms.config.ts`
+### Starter templates
 
-Define your content schema. Here's a minimal example:
+```bash
+cms create my-site --starter default     # Pages + articles (clean slate)
+cms create my-site --starter blog        # Blog with categories, tags, authors
+cms create my-site --starter portfolio   # Projects, case studies, about
+cms create my-site --starter business    # Pages, blog, team, services, testimonials
+```
+
+Run `cms create my-site` without `--starter` for an interactive prompt.
+
+## Start
+
+```bash
+bun run dev
+```
+
+This starts PostgreSQL and Redis via Docker Compose, runs migrations, and launches the API server, admin UI, and frontend through a single proxy at **http://localhost:3006**.
+
+## What you have
+
+```
+my-site/
+├── cms.config.ts       ← Your content schema — the main file you edit
+├── package.json        ← @kritano/cms as a versioned dependency
+├── .env                ← Environment config (never committed)
+├── .gitignore
+├── bun.lock            ← Commit this — it pins your CMS version
+├── migrations/         ← Auto-generated SQL — commit these
+├── media/              ← Uploaded files (not committed)
+└── themes/             ← Custom theme (optional)
+```
+
+The CMS lives entirely inside `node_modules/@kritano/cms`. Your files are 100% yours — a CMS update never touches your schema, theme, or content.
+
+## Customise your content types
+
+Open `cms.config.ts`. This is the source of truth for your content model:
 
 ```typescript
 import {
-  defineConfig,
-  defineCollection,
-  text, slug, richText, datetime,
-  select, media, seoBlock
+  defineConfig, defineCollection,
+  text, slug, richText, select, media, seoBlock
 } from '@kritano/cms/core'
 
 export default defineConfig({
@@ -54,226 +92,99 @@ export default defineConfig({
     domain: 'https://example.com',
     language: 'en',
   },
-
   collections: [
-
-    defineCollection('page', {
+    defineCollection('article', {
       fields: {
         title:  text().required(),
         slug:   slug().from('title'),
         body:   richText(),
+        image:  media(),
         status: select(['draft', 'published']).default('draft'),
         seo:    seoBlock(),
-      }
+      },
     }),
-
-    defineCollection('article', {
-      fields: {
-        title:         text().required(),
-        slug:          slug().from('title'),
-        body:          richText(),
-        featuredImage: media(),
-        publishedAt:   datetime().nullable(),
-        status:        select(['draft', 'published']).default('draft'),
-        seo:           seoBlock(),
-      }
-    }),
-
-  ]
+  ],
 })
 ```
 
-Add as many collections as you need. Available field types:
+Save the file and `bun run dev` automatically applies migrations and regenerates types.
 
-| Field | Import | Description |
-|-------|--------|-------------|
-| `text()` | `text` | Single-line text |
-| `textarea()` | `textarea` | Multi-line text |
-| `richText()` | `richText` | Rich text editor |
-| `slug()` | `slug` | URL slug, can auto-generate from another field |
-| `url()` | `url` | URL field |
-| `select()` | `select` | Single select from options |
-| `multiSelect()` | `multiSelect` | Multiple select from options |
-| `media()` | `media` | Image/file upload |
-| `array()` | `array` | Array of any field type |
-| `datetime()` | `datetime` | Date and time |
-| `boolean()` | `boolean` | True/false |
-| `colour()` | `colour` | Colour picker |
-| `blocks()` | `blocks, block` | Block-based content |
-| `seoBlock()` | `seoBlock` | SEO meta fields (title, description, image) |
+## All field types
 
-## 4. Create `.env`
+| Field | Usage | Description |
+|-------|-------|-------------|
+| `text()` | `text().required().min(3)` | Single-line text |
+| `textarea()` | `textarea().maxLength(300)` | Multi-line text |
+| `richText()` | `richText()` | Visual/Markdown/Split editor |
+| `slug()` | `slug().from('title')` | URL slug, auto-generates |
+| `url()` | `url().nullable()` | URL field |
+| `number()` | `number().min(0).integer()` | Numeric value |
+| `boolean()` | `boolean().default(false)` | True/false toggle |
+| `datetime()` | `datetime().nullable()` | Date and time picker |
+| `select()` | `select(['a', 'b'])` | Single select |
+| `multiSelect()` | `multiSelect(['a', 'b'])` | Multiple select |
+| `media()` | `media()` | Image/file upload |
+| `relation()` | `relation('author')` | Link to another collection |
+| `array()` | `array(text())` | Array of any field type |
+| `colour()` | `colour()` | Colour picker |
+| `blocks()` | `blocks([block('hero', {...})])` | Flexible content blocks |
+| `seoBlock()` | `seoBlock()` | SEO meta fields |
 
-```env
-# Database
-DATABASE_URL=postgresql://cms:cms@localhost:5432/cms
+All fields are chainable: `text().required().min(3).max(100)`
 
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Auth
-JWT_SECRET=change-me-to-a-random-string-at-least-32-chars
-REFRESH_TOKEN_SECRET=change-me-to-another-random-string
-
-# Site
-SITE_URL=http://localhost:3006
-ADMIN_URL=http://localhost:3006/admin
-
-# Media
-MEDIA_PATH=./media
-
-# Update channel
-CMS_UPDATE_CHANNEL=development
-```
-
-Generate real secrets:
-
-```bash
-openssl rand -base64 32  # run twice, one for each secret
-```
-
-## 5. Create `.gitignore`
-
-```
-node_modules/
-dist/
-.env
-media/
-*.local
-```
-
-## 6. Install and run
-
-```bash
-bun install
-bun run dev
-```
-
-The CMS handles everything:
-
-- Starts Postgres and Redis via Docker Compose
-- Runs database migrations from your schema
-- Generates TypeScript types for your collections
-- Starts the API server
-- Starts the admin UI
-- Starts the frontend (default theme)
-
-## 7. Open the admin
-
-Go to [http://localhost:3006/admin](http://localhost:3006/admin)
-
-Login: `admin@cms.local` / `admin` — change this immediately.
-
----
-
-## What's running
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| Admin | `http://localhost:3006/admin` | Content management UI |
-| Frontend | `http://localhost:3006` | Your site (default theme) |
-| API | `http://localhost:3005/api` | REST API |
-| GraphQL | `http://localhost:3005/api/graphql` | GraphQL endpoint |
-| Health | `http://localhost:3005/api/health` | Health check |
-
----
-
-## Adding a custom theme
-
-Optional. The default theme works out of the box. When you're ready to customise the frontend, create a theme:
-
-```
-themes/my-theme/
-├── theme.config.ts
-├── layouts/
-│   └── Base.astro
-├── components/
-├── templates/
-│   ├── page.astro
-│   └── article.astro
-├── pages/
-│   ├── index.astro
-│   └── 404.astro
-└── styles/
-    └── global.css
-```
-
-Register it in `cms.config.ts`:
+## Page builder blocks
 
 ```typescript
-export default defineConfig({
-  theme: './themes/my-theme',
-  // ...
-})
+content: blocks([
+  block('hero', {
+    heading: text().required(),
+    subheading: text(),
+    image: media(),
+    ctaUrl: url(),
+  }),
+  block('text-block', {
+    body: richText(),
+  }),
+])
 ```
 
-Define the theme:
+## Build your theme
+
+The default theme works out of the box. To customise, create a theme directory and register it in `cms.config.ts`. See [Themes](themes.md) for the full guide.
+
+## Use the API from any frontend
 
 ```typescript
-// themes/my-theme/theme.config.ts
-import { defineTheme } from '@kritano/cms/astro'
+import { CMSClient } from '@kritano/cms/sdk'
 
-export default defineTheme({
-  name: 'my-theme',
-  version: '1.0.0',
-  templates: {
-    page:    './templates/page.astro',
-    article: './templates/article.astro',
-  },
-  settings: {
-    siteName: { type: 'text', label: 'Site Name', default: 'My Site' },
-  }
+const cms = new CMSClient({ url: 'https://mysite.com/api' })
+
+const articles = await cms.collection('article').findMany({
+  where: { status: 'published' },
+  orderBy: { publishedAt: 'desc' },
+})
+
+const article = await cms.collection('article').findOne({
+  where: { slug: 'hello-world' },
 })
 ```
 
----
+## Connect Kritano
 
-## Project structure
+Free site health scoring — SEO, accessibility, performance, and AI visibility. Connect from **Admin → Site Health**.
 
-```
-my-site/
-├── cms.config.ts       ← Your content schema
-├── package.json        ← CMS as a dependency
-├── .env                ← Environment config (not committed)
-├── .gitignore
-├── bun.lock
-├── migrations/         ← Auto-generated, commit these
-├── media/              ← Uploaded files (not committed)
-└── themes/             ← Custom theme (optional)
-```
+## Deploy to a live server
 
----
+Go to **Admin → Deployment → Setup**, fill in your server details, and generate a setup script. See [Deployment](deployment.md).
 
-## Day-to-day workflow
-
-**Add a new collection:**
-1. Add it to `cms.config.ts`
-2. Run `bun run dev` — migrations and types auto-update
-3. Create content in the admin
-4. Add a template in your theme (if using a custom theme)
-
-**Update the CMS:**
-```bash
-bun update @kritano/cms
-bun run dev
-```
-
----
-
-## Deployment
-
-Go to **Admin → Deployment → Setup**, fill in your server details, and click **Generate Script**. Run the generated script on your server.
-
-For auto-deploy on push, add a GitHub Action:
+## Auto-deploy on push
 
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy
-
 on:
   push:
     branches: [main]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -286,33 +197,56 @@ jobs:
           script: |
             cd /var/my-site
             git pull origin main
-            bun install
-            bun run migrate
-            bun run build
+            bun install && bun run migrate && bun run build
             systemctl restart cms-api cms-worker
 ```
 
-Add `SERVER_IP` and `SSH_KEY` as GitHub secrets.
+## Keeping up to date
 
----
+```bash
+bun update @kritano/cms
+bun run migrate
+bun run dev                # test locally
+git add bun.lock && git commit -m "chore: update cms"
+git push
+```
+
+The admin shows a notification when updates are available at **Deployment → Updates**.
+
+## Day-to-day workflow
+
+1. Edit `cms.config.ts` to add or change collections
+2. Run `bun run dev` — migrations and types auto-update
+3. Create content in the admin
+4. Push to deploy
+
+## What's running locally
+
+| Port | Service |
+|------|---------|
+| 3005 | API server (REST + GraphQL) |
+| 3006 | Proxy — admin at `/admin`, frontend at `/` |
+
+## Troubleshooting
+
+**Docker not running:** Make sure Docker Desktop is open before running `bun run dev`.
+
+**Port already in use:** Set `PORT=3010 DEV_PORT=3011` in `.env`.
+
+**Migrations failed:** Run `bun run migrate` manually. To reset: `docker compose down -v` and restart.
+
+**"Cannot find module":** Run `bun install`.
 
 ## Next steps
 
-- [Collections](collections.md) — learn all 16 field types and the schema DSL
-- [Editor](editor.md) — visual, markdown, and split editor modes
-- [API reference](api.md) — full REST and GraphQL documentation
-- [Themes](themes.md) — build an Astro theme for your frontend
-- [Deployment](deployment.md) — deploy to a production server
-- [Plugins](plugins/using-plugins.md) — extend the CMS with plugins
-- [Search](search.md) — full-text search with Typesense
+- [Installation paths](installation.md) — developer, browser installer, manual
+- [Updating](updating.md) — keeping the CMS up to date
+- [Collections](collections.md) — field types and schema DSL
+- [Editor](editor.md) — visual, markdown, and split modes
+- [API reference](api.md) — REST and GraphQL
+- [Themes](themes.md) — build an Astro theme
+- [Deployment](deployment.md) — deploy to production
+- [Plugins](plugins/using-plugins.md) — extend the CMS
+- [Search](search.md) — full-text search
 - [OAuth](oauth.md) — Google and GitHub login
-- [Live preview](preview.md) — preview draft content on your site
-- [Kritano integration](kritano.md) — site health scoring
-- [Users and roles](users-and-roles.md) — team management, permissions, 2FA
-- [Revision history](revisions.md) — document versioning and restore
-- [Scheduled publishing](scheduling.md) — publish at a future date
-- [Forms](forms.md) — form builder with zero-JS rendering
-- [Redirects](redirects.md) — URL redirect management
-- [Webhooks](webhooks.md) — outbound event notifications
-- [API keys](api-keys.md) — headless API authentication
-- [MCP server](mcp.md) — connect AI assistants to your CMS
+- [Live preview](preview.md) — preview drafts

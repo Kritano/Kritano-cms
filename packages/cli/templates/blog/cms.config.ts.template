@@ -1,0 +1,65 @@
+import {
+  defineConfig,
+  defineCollection,
+  text,
+  slug,
+  richText,
+  textarea,
+  select,
+  media,
+  array,
+  datetime,
+  seoBlock,
+  relation,
+} from '@kritano/cms/core'
+
+export default defineConfig({
+  site: {
+    name: '{{SITE_NAME}}',
+    domain: 'http://localhost:3006',
+    language: 'en',
+  },
+  collections: [
+    defineCollection('page', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        featuredImage: media(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('article', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        excerpt: textarea().maxLength(300),
+        category: relation('category'),
+        tags: array(text()),
+        featuredImage: media(),
+        publishedAt: datetime().nullable(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('category', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        description: textarea().maxLength(200),
+        status: select(['draft', 'published']).default('published'),
+      },
+    }),
+    defineCollection('author', {
+      fields: {
+        name: text().required(),
+        slug: slug().from('name'),
+        bio: textarea().maxLength(500),
+        avatar: media(),
+        status: select(['draft', 'published']).default('published'),
+      },
+    }),
+  ],
+})

@@ -1,0 +1,73 @@
+import {
+  defineConfig,
+  defineCollection,
+  text,
+  slug,
+  richText,
+  textarea,
+  select,
+  media,
+  array,
+  datetime,
+  url,
+  boolean,
+  seoBlock,
+} from '@kritano/cms/core'
+
+export default defineConfig({
+  site: {
+    name: '{{SITE_NAME}}',
+    domain: 'http://localhost:3006',
+    language: 'en',
+  },
+  collections: [
+    defineCollection('page', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        featuredImage: media(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('project', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        description: richText(),
+        excerpt: textarea().maxLength(200),
+        url: url().nullable(),
+        tags: array(text()),
+        images: array(media()),
+        featured: boolean().default(false),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('caseStudy', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        client: text(),
+        body: richText(),
+        excerpt: textarea().maxLength(300),
+        featuredImage: media(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('article', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        excerpt: textarea().maxLength(300),
+        featuredImage: media(),
+        publishedAt: datetime().nullable(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+  ],
+})

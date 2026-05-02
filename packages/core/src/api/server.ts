@@ -12,6 +12,7 @@ import { redirectMiddleware } from './middleware/redirects'
 import { loadPlugins, fireReadyHook } from '../plugins/loader'
 import { getPluginRegistry } from '../plugins/registry'
 import { isSearchAvailable, syncSchemas } from '../search'
+import { installerGuard, installerRoutes } from '../installer'
 
 export function createServer(config: CmsConfig): Hono {
   const app = new Hono()
@@ -19,7 +20,11 @@ export function createServer(config: CmsConfig): Hono {
   // Global middleware
   app.use('*', corsMiddleware)
   app.use('*', redirectMiddleware)
+  app.use('*', installerGuard)
   app.onError(errorHandler)
+
+  // Installer routes (only active before first setup)
+  app.route('/api', installerRoutes)
 
   // REST API routes
   const apiRouter = createApiRouter(config)

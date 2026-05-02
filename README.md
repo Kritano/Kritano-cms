@@ -125,6 +125,8 @@ All fields are chainable: `text().required().min(3).max(100)`
 | Topic | Link |
 |---|---|
 | Getting started | [docs/getting-started.md](docs/getting-started.md) |
+| Installation paths | [docs/installation.md](docs/installation.md) |
+| Updating | [docs/updating.md](docs/updating.md) |
 | Collections & field types | [docs/collections.md](docs/collections.md) |
 | Editor modes & blocks | [docs/editor.md](docs/editor.md) |
 | REST & GraphQL API | [docs/api.md](docs/api.md) |

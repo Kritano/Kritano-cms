@@ -1,0 +1,11 @@
+{
+  "name": "@kritano/create-cms",
+  "version": "0.4.0",
+  "type": "module",
+  "bin": {
+    "create-cms": "./src/index.ts"
+  },
+  "dependencies": {
+    "@kritano/cms": "workspace:*"
+  }
+}

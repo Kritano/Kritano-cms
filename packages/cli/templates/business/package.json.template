@@ -1,0 +1,14 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cms dev",
+    "build": "cms build",
+    "migrate": "cms migrate",
+    "generate": "cms generate"
+  },
+  "dependencies": {
+    "@kritano/cms": "^{{VERSION}}"
+  }
+}

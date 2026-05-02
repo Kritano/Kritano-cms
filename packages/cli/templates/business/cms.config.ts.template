@@ -1,0 +1,96 @@
+import {
+  defineConfig,
+  defineCollection,
+  text,
+  slug,
+  richText,
+  textarea,
+  select,
+  media,
+  datetime,
+  url,
+  seoBlock,
+  blocks,
+  block,
+} from '@kritano/cms/core'
+
+export default defineConfig({
+  site: {
+    name: '{{SITE_NAME}}',
+    domain: 'http://localhost:3006',
+    language: 'en',
+  },
+  collections: [
+    defineCollection('page', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        content: blocks([
+          block('hero', {
+            heading: text().required(),
+            subheading: text(),
+            image: media(),
+            ctaLabel: text(),
+            ctaUrl: url(),
+          }),
+          block('text-block', {
+            body: richText(),
+          }),
+          block('cta', {
+            heading: text().required(),
+            body: text(),
+            buttonLabel: text(),
+            buttonUrl: url(),
+          }),
+        ]),
+        featuredImage: media(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('article', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        body: richText(),
+        excerpt: textarea().maxLength(300),
+        featuredImage: media(),
+        publishedAt: datetime().nullable(),
+        status: select(['draft', 'published']).default('draft'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('teamMember', {
+      fields: {
+        name: text().required(),
+        slug: slug().from('name'),
+        role: text(),
+        bio: textarea().maxLength(500),
+        photo: media(),
+        status: select(['draft', 'published']).default('published'),
+      },
+    }),
+    defineCollection('service', {
+      fields: {
+        title: text().required(),
+        slug: slug().from('title'),
+        description: richText(),
+        excerpt: textarea().maxLength(200),
+        icon: text(),
+        status: select(['draft', 'published']).default('published'),
+        seo: seoBlock(),
+      },
+    }),
+    defineCollection('testimonial', {
+      fields: {
+        quote: textarea().required(),
+        author: text().required(),
+        role: text(),
+        company: text(),
+        photo: media(),
+        status: select(['draft', 'published']).default('published'),
+      },
+    }),
+  ],
+})

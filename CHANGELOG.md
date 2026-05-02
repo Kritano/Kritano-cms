@@ -4,6 +4,19 @@ All notable changes to Kritano CMS are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] — 2026-05-01
+
+### Added
+- `cms create` command — scaffold a new site in under two minutes
+- `bunx @kritano/create-cms` — zero-install scaffolding, no global CLI needed
+- Four starter templates — default, blog, portfolio, business with seed content
+- Browser-based installer — five-step web wizard for non-technical users
+- Installer auto-detects fresh install (no admin user), never shows after setup complete
+- Kritano connect prompt on installer completion step
+- Rate limiting on installer endpoints (10 requests per IP per hour)
+- Getting started documentation completely rewritten for `cms create` workflow
+- New docs: `installation.md` (3 install paths), `updating.md` (update workflow)
+
 ## [0.3.0] — 2026-05-01
 
 ### Added

@@ -8,6 +8,7 @@ import {
 import { isAuthenticated } from '@/lib/auth'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Login } from '@/pages/Login'
+import { Installer } from '@/pages/Installer'
 import { Dashboard } from '@/pages/Dashboard'
 import { CollectionList } from '@/pages/collection/CollectionList'
 import { DocumentEditor } from '@/pages/collection/DocumentEditor'
@@ -38,6 +39,13 @@ const COLLECTIONS = ['page', 'article', 'project']
 // Root route
 const rootRoute = createRootRoute({
   component: Outlet,
+})
+
+// Installer route (no auth required — only shows before first setup)
+const installerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/install',
+  component: Installer,
 })
 
 // Login route (no auth required)
@@ -250,6 +258,7 @@ const accountSecurityRoute = createRoute({
 })
 
 const routeTree = rootRoute.addChildren([
+  installerRoute,
   loginRoute,
   authLayoutRoute.addChildren([
     dashboardRoute,

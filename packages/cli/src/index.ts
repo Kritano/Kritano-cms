@@ -6,6 +6,11 @@ const command = process.argv[2]
 
 async function main() {
   switch (command) {
+    case 'create': {
+      const { create } = await import('./commands/create')
+      await create()
+      break
+    }
     case 'dev': {
       const { dev } = await import('./commands/dev')
       await dev()
@@ -78,6 +83,7 @@ async function main() {
       console.log('  Usage: cms <command>')
       console.log('')
       console.log('  Commands:')
+      console.log('    create <name>    Scaffold a new site')
       console.log('    dev              Start local dev environment')
       console.log('    migrate          Run pending database migrations')
       console.log('    migrate:create   Generate a new migration from schema changes')
