@@ -1,0 +1,44 @@
+{
+  "plugins": [
+    {
+      "name": "@kritano/cms-plugin-newsletter",
+      "repo": "Kritano/cms-plugin-newsletter",
+      "description": "Newsletter and subscriber management — collect emails, send campaigns, track opens",
+      "version": "1.0.0",
+      "author": "Kritano",
+      "trust": "trusted",
+      "tags": ["email", "subscribers", "marketing"],
+      "icon": "mail"
+    },
+    {
+      "name": "@kritano/cms-plugin-analytics",
+      "repo": "Kritano/cms-plugin-analytics",
+      "description": "Simple analytics dashboard — page views, referrers, top content, no third-party scripts",
+      "version": "0.1.0",
+      "author": "Kritano",
+      "trust": "trusted",
+      "tags": ["analytics", "tracking", "dashboard"],
+      "icon": "bar-chart"
+    },
+    {
+      "name": "@kritano/cms-plugin-seo",
+      "repo": "Kritano/cms-plugin-seo",
+      "description": "Advanced SEO tools — sitemap customisation, structured data, social previews, meta validation",
+      "version": "1.0.0",
+      "author": "Kritano",
+      "trust": "trusted",
+      "tags": ["seo", "meta", "search", "sitemap"],
+      "icon": "search"
+    },
+    {
+      "name": "@kritano/cms-plugin-io",
+      "repo": "Kritano/kritano-cms-io",
+      "description": "Export and import content between CMS instances — migrate, backup, seed",
+      "version": "1.0.0",
+      "author": "Kritano",
+      "trust": "trusted",
+      "tags": ["export", "import", "backup", "migration"],
+      "icon": "arrow-left-right"
+    }
+  ]
+}

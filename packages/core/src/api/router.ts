@@ -22,6 +22,19 @@ import { oauthRoutes } from './routes/oauth'
 import { previewRoutes } from './routes/preview'
 import { updateRoutes } from './routes/updates'
 
+function buildFieldNotes(field: Record<string, unknown>): string {
+  const notes: string[] = []
+  if (field.min !== undefined) notes.push(`min: ${field.min}`)
+  if (field.max !== undefined) notes.push(`max: ${field.max}`)
+  if (field.maxLength !== undefined) notes.push(`max ${field.maxLength} chars`)
+  if (field.integer) notes.push('integer')
+  if (Array.isArray(field.options)) notes.push(`options: ${(field.options as string[]).join(', ')}`)
+  if (field.default !== undefined) notes.push(`default: ${field.default}`)
+  if (field.from) notes.push(`from: ${field.from}`)
+  if (field.target) notes.push(`→ ${field.target}`)
+  return notes.join('. ')
+}
+
 export function createApiRouter(config: CmsConfig): Hono {
   const api = new Hono()
 
@@ -57,6 +70,52 @@ export function createApiRouter(config: CmsConfig): Hono {
         name: col.name,
         fields: col.fields,
       })),
+    })
+  })
+
+  // Block types endpoint — aggregates all block definitions across collections
+  api.get('/api/admin/blocks', (c) => {
+    const blocks: Record<string, {
+      name: string
+      description: string | null
+      fields: Array<{ name: string; type: string; required: boolean; nullable: boolean; notes: string }>
+      usedIn: Array<{ collection: string; fieldName: string }>
+    }> = {}
+
+    for (const col of config.collections) {
+      for (const [fieldName, field] of Object.entries(col.fields)) {
+        if (field.type === 'blocks' && Array.isArray(field.blocks)) {
+          for (const blockDef of field.blocks) {
+            if (!blocks[blockDef.name]) {
+              blocks[blockDef.name] = {
+                name: blockDef.name,
+                description: (blockDef as any).description ?? null,
+                fields: Object.entries(blockDef.fields).map(([fname, fdef]: [string, any]) => ({
+                  name: fname,
+                  type: fdef.type,
+                  required: !!fdef.required,
+                  nullable: !!fdef.nullable,
+                  notes: buildFieldNotes(fdef),
+                })),
+                usedIn: [],
+              }
+            }
+            blocks[blockDef.name].usedIn.push({ collection: col.name, fieldName })
+          }
+        }
+      }
+    }
+
+    const collectionsWithBlocks = new Set(
+      Object.values(blocks).flatMap((b) => b.usedIn.map((u) => u.collection)),
+    ).size
+
+    return c.json({
+      blocks,
+      stats: {
+        totalBlocks: Object.keys(blocks).length,
+        collectionsWithBlocks,
+      },
     })
   })
 

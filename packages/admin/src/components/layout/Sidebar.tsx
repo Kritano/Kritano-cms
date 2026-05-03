@@ -17,6 +17,7 @@ import {
   Webhook,
   Puzzle,
   KeyRound,
+  Layers,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -53,6 +54,7 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
   const contentItems: NavItem[] = [
     { label: 'Forms', href: '/admin/forms', icon: FileInput },
     { label: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
+    { label: 'Block Library', href: '/admin/blocks', icon: Layers },
   ]
 
   const teamItems: NavItem[] = [

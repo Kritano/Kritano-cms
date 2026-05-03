@@ -211,3 +211,79 @@ pluginRoutes.delete('/admin/plugins/:name', requireAuth, requirePermission('sett
 
   return c.json({ success: true, message: 'Plugin disabled. Restart the CMS to fully remove.' })
 })
+
+// ── Plugin Registry ─────────────────────────────────────────────────────
+
+const REGISTRY_URL = 'https://raw.githubusercontent.com/Kritano/Kritano-cms/main/plugins.json'
+let registryCache: { data: any; fetchedAt: number } | null = null
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+
+async function fetchRegistry(): Promise<any[]> {
+  if (registryCache && Date.now() - registryCache.fetchedAt < CACHE_TTL) {
+    return registryCache.data
+  }
+
+  try {
+    const res = await fetch(REGISTRY_URL, { headers: { 'User-Agent': 'Kritano-CMS' } })
+    if (!res.ok) return registryCache?.data ?? []
+    const data = await res.json() as { plugins: any[] }
+    registryCache = { data: data.plugins ?? [], fetchedAt: Date.now() }
+    return registryCache.data
+  } catch {
+    return registryCache?.data ?? []
+  }
+}
+
+// List available plugins from registry
+pluginRoutes.get('/admin/plugins/available', requireAuth, requirePermission('settings'), async (c) => {
+  const available = await fetchRegistry()
+  const registry = getPluginRegistry()
+  const installed = new Set(registry.loaded.map((p) => p.definition.name))
+
+  const plugins = available.map((p: any) => ({
+    ...p,
+    installed: installed.has(p.name),
+  }))
+
+  return c.json({ plugins })
+})
+
+// Install a plugin from GitHub
+pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('settings'), async (c) => {
+  const body = await c.req.json<{ repo: string; name: string }>()
+
+  if (!body.repo) {
+    return c.json({ error: { code: 'VALIDATION', message: 'repo is required' } }, 400)
+  }
+
+  try {
+    // Install from GitHub
+    const { $ } = await import('bun')
+    await $`bun add github:${body.repo}`.quiet()
+
+    // Add to cms.config.ts if name provided
+    if (body.name) {
+      try {
+        const { readFileSync, writeFileSync } = await import('node:fs')
+        const { resolve } = await import('node:path')
+        const configPath = resolve(process.cwd(), 'cms.config.ts')
+        let content = readFileSync(configPath, 'utf-8')
+
+        if (!content.includes(body.name)) {
+          if (content.includes('plugins:')) {
+            content = content.replace(/plugins:\s*\[/, `plugins: [\n    '${body.name}',`)
+          } else {
+            content = content.replace(/(\]\s*,?\s*)\n(\}\))$/, `$1\n  plugins: [\n    '${body.name}',\n  ],\n$2`)
+          }
+          writeFileSync(configPath, content, 'utf-8')
+        }
+      } catch {}
+    }
+
+    return c.json({ success: true, message: 'Plugin installed. Restart the CMS to activate.' })
+  } catch (err) {
+    return c.json({
+      error: { code: 'INSTALL_FAILED', message: err instanceof Error ? err.message : 'Installation failed' },
+    }, 500)
+  }
+})
