@@ -90,7 +90,7 @@ export class PluginRegistry {
 
   addAdminSection(pluginName: string, section: AdminSection): void {
     const plugin = this.plugins.get(pluginName)
-    if (plugin) plugin.adminSections.push(section.path)
+    if (plugin) plugin.adminSections.push({ label: section.label, icon: section.icon, path: section.path })
   }
 
   addEditorTab(pluginName: string, tab: EditorTab): void {

@@ -14,6 +14,7 @@ import { CollectionList } from '@/pages/collection/CollectionList'
 import { DocumentEditor } from '@/pages/collection/DocumentEditor'
 import { Media } from '@/pages/Media'
 import { BlockLibrary } from '@/pages/BlockLibrary'
+import { ExportImport } from '@/pages/ExportImport'
 import { SiteSettings } from '@/pages/site/SiteSettings'
 import { SiteHealth } from '@/pages/site/SiteHealth'
 import { Deployment } from '@/pages/Deployment'
@@ -113,6 +114,13 @@ const mediaRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: '/admin/media',
   component: Media,
+})
+
+// Export / Import (IO plugin)
+const ioRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/io',
+  component: ExportImport,
 })
 
 // Block library
@@ -269,6 +277,7 @@ const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([
     dashboardRoute,
     mediaRoute,
+    ioRoute,
     blockLibraryRoute,
     siteRoute,
     siteHealthRoute,

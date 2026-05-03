@@ -61,10 +61,9 @@ pluginRoutes.get('/admin/plugins/registry', requireAuth, async (c) => {
     for (const section of plugin.adminSections) {
       sections.push({
         pluginName: name,
-        label: section,
-        icon: 'puzzle',
-        path: `/admin/plugins/${name}/section`,
-        componentUrl: `/api/plugins/${name}/admin/section.js`,
+        label: section.label,
+        icon: section.icon || 'puzzle',
+        path: section.path,
       })
     }
 
