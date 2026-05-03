@@ -1,5 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
 import { useUpdateCount } from '@/components/UpdateBanner'
 import {
   FileText,
@@ -18,6 +20,7 @@ import {
   Puzzle,
   KeyRound,
   Layers,
+  ArrowLeftRight,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -62,6 +65,25 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
     { label: 'Roles', href: '/admin/roles', icon: Shield },
     { label: 'Activity Log', href: '/admin/activity', icon: ClipboardList },
   ]
+
+  // Fetch plugin-registered sections
+  const { data: pluginRegistry } = useQuery({
+    queryKey: ['plugin-registry'],
+    queryFn: () => api<{ sections: Array<{ pluginName: string; label: string; icon: string; path: string }> }>('/admin/plugins/registry').catch(() => ({ sections: [] })),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+
+  const PLUGIN_ICONS: Record<string, LucideIcon> = {
+    'arrow-left-right': ArrowLeftRight,
+    'puzzle': Puzzle,
+  }
+
+  const pluginItems: NavItem[] = (pluginRegistry?.sections ?? []).map((s) => ({
+    label: s.label,
+    href: s.path,
+    icon: PLUGIN_ICONS[s.icon] || Puzzle,
+  }))
 
   const updateCount = useUpdateCount()
 
@@ -130,6 +152,18 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
           {teamItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
           ))}
+
+          {pluginItems.length > 0 && (
+            <>
+              <div className="my-4 border-t border-gray-800" />
+              <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Plugins
+              </p>
+              {pluginItems.map((item) => (
+                <NavLink key={item.href} item={item} active={isActive(item.href)} onClick={onClose} />
+              ))}
+            </>
+          )}
 
           <div className="my-4 border-t border-gray-800" />
 

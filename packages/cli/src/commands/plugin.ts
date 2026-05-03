@@ -368,21 +368,10 @@ function addPluginToConfig(packageName: string): boolean {
       `plugins: [\n    '${packageName}',`,
     )
   } else {
-    // Add plugins property before the closing of defineConfig
-    // Find the last ] before the final })
-    content = content.replace(
-      /(\n\s*\]\s*,?\s*\n\}\))$/,
-      `$1`.replace(']', `],\n  plugins: [\n    '${packageName}',\n  ],\n})`).replace(/\}\)\}\)$/, '})'),
-    )
-
-    // Simpler approach: find the closing of defineConfig and insert before it
-    if (!content.includes('plugins:')) {
-      // Find the pattern: collections array end followed by defineConfig close
-      const collectionsEndRegex = /(\]\s*,?\s*)\n(\}\))\s*$/
-      content = content.replace(
-        collectionsEndRegex,
-        `$1\n  plugins: [\n    '${packageName}',\n  ],\n$2`,
-      )
+    // Add plugins array before the closing }) of defineConfig
+    const lastClose = content.lastIndexOf('})')
+    if (lastClose !== -1) {
+      content = content.slice(0, lastClose) + `  plugins: [\n    '${packageName}',\n  ],\n` + content.slice(lastClose)
     }
   }
 

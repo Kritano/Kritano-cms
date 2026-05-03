@@ -143,13 +143,21 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
 
         if (!content.includes(body.name)) {
           if (content.includes('plugins:')) {
+            // Add to existing plugins array
             content = content.replace(/plugins:\s*\[/, `plugins: [\n    '${body.name}',`)
           } else {
-            content = content.replace(/(\]\s*,?\s*)\n(\}\))$/, `$1\n  plugins: [\n    '${body.name}',\n  ],\n$2`)
+            // Add plugins array before the closing of defineConfig
+            // Find the last }) which closes defineConfig
+            const lastClose = content.lastIndexOf('})')
+            if (lastClose !== -1) {
+              content = content.slice(0, lastClose) + `  plugins: [\n    '${body.name}',\n  ],\n` + content.slice(lastClose)
+            }
           }
           writeFileSync(configPath, content, 'utf-8')
         }
-      } catch {}
+      } catch (err) {
+        console.warn(`[CMS] Failed to update cms.config.ts: ${err}`)
+      }
     }
 
     // 3. Hot-load the plugin — register it without restart
