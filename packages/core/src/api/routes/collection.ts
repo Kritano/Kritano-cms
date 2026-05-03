@@ -18,6 +18,21 @@ function isJsonbField(field: FieldDefinition): boolean {
 
 function serializeValue(val: unknown, field: FieldDefinition): unknown {
   if (val === null || val === undefined) return null
+
+  // For JSONB fields: ensure we always store proper JSON, not double-encoded strings
+  if (isJsonbField(field)) {
+    if (typeof val === 'string') {
+      // If it's a JSON string, parse then re-stringify to ensure clean storage
+      try {
+        const parsed = JSON.parse(val)
+        return JSON.stringify(parsed)
+      } catch {
+        return val
+      }
+    }
+    return JSON.stringify(val)
+  }
+
   if (typeof val === 'object') return JSON.stringify(val)
   return val
 }
