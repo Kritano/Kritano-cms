@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import type { CmsConfig } from '@kritano/cms/types'
 import { healthRoutes } from './routes/health'
+import { robotsRoutes } from './routes/robots'
 import { authRoutes } from './routes/auth'
 import { createCollectionRoutes } from './routes/collection'
 import { mediaRoutes } from './routes/media'
@@ -39,6 +40,7 @@ export function createApiRouter(config: CmsConfig): Hono {
   const api = new Hono()
 
   // System routes
+  api.route('/', robotsRoutes)
   api.route('/api', healthRoutes)
   api.route('/api', authRoutes)
   api.route('/api', oauthRoutes)

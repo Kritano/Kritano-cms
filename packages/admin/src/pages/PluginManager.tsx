@@ -254,6 +254,7 @@ function AvailableTab() {
       setInstalling(null)
       queryClient.invalidateQueries({ queryKey: ['plugins-available'] })
       queryClient.invalidateQueries({ queryKey: ['plugins'] })
+      queryClient.invalidateQueries({ queryKey: ['plugin-registry'] })
     },
     onError: (err: any) => {
       setResult({ name: '', message: err.message || 'Install failed' })

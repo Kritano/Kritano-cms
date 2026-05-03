@@ -10,7 +10,7 @@ const { images = [], caption } = Astro.props
     {images.map((img) => {
       const url = typeof img === 'string' ? img : img.url
       const alt = typeof img === 'string' ? '' : img.alt || ''
-      return <img src={url} alt={alt} />
+      return <img src={url} alt={alt} loading="lazy" decoding="async" />
     })}
   </div>
   {caption && <figcaption>{caption}</figcaption>}

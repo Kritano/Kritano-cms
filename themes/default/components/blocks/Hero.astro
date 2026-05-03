@@ -9,7 +9,7 @@ interface Props {
 const { heading, subheading, image, ctaLabel, ctaUrl } = Astro.props
 ---
 <section class="hero">
-  {image && <img src={image.url} alt={image.alt || ''} class="hero-image" />}
+  {image && <img src={image.url} alt={image.alt || ''} class="hero-image" loading="eager" decoding="async" fetchpriority="high" />}
   <h1>{heading}</h1>
   {subheading && <p class="hero-sub">{subheading}</p>}
   {ctaLabel && ctaUrl && <a href={ctaUrl} class="hero-cta">{ctaLabel}</a>}

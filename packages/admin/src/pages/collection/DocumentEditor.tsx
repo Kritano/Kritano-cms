@@ -49,7 +49,14 @@ export function DocumentEditor({ collection, id }: Props) {
       for (const key of Object.keys(schema.fields)) {
         // Map snake_case DB columns back to camelCase field names
         const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase()
-        vals[key] = doc[key] ?? doc[snakeKey] ?? null
+        let value = doc[key] ?? doc[snakeKey] ?? null
+
+        // Parse JSON strings for JSONB fields (blocks, arrays, richText, seo)
+        if (typeof value === 'string' && value.startsWith('[') || typeof value === 'string' && value.startsWith('{')) {
+          try { value = JSON.parse(value) } catch {}
+        }
+
+        vals[key] = value
       }
       setFields(vals)
       setDirty(false)

@@ -1,24 +1,148 @@
 ---
+interface SeoData {
+  metaTitle?: string | null
+  metaDescription?: string | null
+  canonicalUrl?: string | null
+  ogTitle?: string | null
+  ogDescription?: string | null
+  ogImage?: string | null
+  ogType?: string | null
+  twitterCard?: string | null
+  twitterSite?: string | null
+  robotsIndex?: string | null
+  robotsFollow?: string | null
+  focusKeyword?: string | null
+  structuredDataType?: string | null
+  noIndex?: boolean
+}
+
 interface Props {
   title: string
   description?: string
+  seo?: SeoData | null
+  collection?: string
+  publishedAt?: string | null
+  updatedAt?: string | null
+  authorName?: string | null
 }
 
-const { title, description } = Astro.props
+const { title, description, seo, collection, publishedAt, updatedAt, authorName } = Astro.props
+
+const siteUrl = import.meta.env.CMS_URL || import.meta.env.SITE_URL || 'http://localhost:3006'
+const siteName = import.meta.env.SITE_NAME || 'Kritano CMS'
+const pageUrl = `${siteUrl}${Astro.url.pathname}`
+
+// Resolve SEO values with fallbacks
+const metaTitle = seo?.metaTitle || title
+const metaDescription = seo?.metaDescription || description || ''
+const canonical = seo?.canonicalUrl || pageUrl
+const ogTitle = seo?.ogTitle || metaTitle
+const ogDescription = seo?.ogDescription || metaDescription
+const ogType = seo?.ogType || (collection === 'article' ? 'article' : 'website')
+const ogImage = seo?.ogImage || ''
+const twitterCard = seo?.twitterCard || 'summary_large_image'
+const twitterSite = seo?.twitterSite || ''
+const robotsIndex = seo?.noIndex ? 'noindex' : (seo?.robotsIndex || 'index')
+const robotsFollow = seo?.robotsFollow || 'follow'
+const robotsContent = `${robotsIndex}, ${robotsFollow}`
+
+// Structured data
+function buildJsonLd() {
+  const schemas: any[] = []
+
+  // Breadcrumbs
+  const crumbs = [{ name: 'Home', url: siteUrl }]
+  if (collection) {
+    crumbs.push({ name: collection.charAt(0).toUpperCase() + collection.slice(1) + 's', url: `${siteUrl}/${collection}` })
+  }
+  crumbs.push({ name: metaTitle, url: pageUrl })
+
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.url })),
+  })
+
+  // Main schema
+  const schemaType = seo?.structuredDataType || autoDetect()
+  switch (schemaType) {
+    case 'Article':
+      const article: any = {
+        '@context': 'https://schema.org', '@type': 'Article',
+        headline: metaTitle, description: metaDescription, url: pageUrl,
+        datePublished: publishedAt || undefined, dateModified: updatedAt || publishedAt || undefined,
+        publisher: { '@type': 'Organization', name: siteName, url: siteUrl },
+      }
+      if (ogImage) article.image = ogImage
+      if (authorName) article.author = { '@type': 'Person', name: authorName }
+      schemas.push(article)
+      break
+    case 'WebPage':
+      schemas.push({ '@context': 'https://schema.org', '@type': 'WebPage', name: metaTitle, description: metaDescription, url: pageUrl, isPartOf: { '@type': 'WebSite', name: siteName, url: siteUrl } })
+      break
+    case 'Person':
+      schemas.push({ '@context': 'https://schema.org', '@type': 'Person', name: metaTitle, description: metaDescription, url: pageUrl })
+      break
+    default:
+      schemas.push({ '@context': 'https://schema.org', '@type': 'WebSite', name: siteName, url: siteUrl, description: metaDescription })
+  }
+
+  return schemas
+}
+
+function autoDetect(): string {
+  if (!collection) return 'WebSite'
+  const c = collection.toLowerCase()
+  if (c === 'article' || c === 'post' || c === 'blog') return 'Article'
+  if (c === 'page') return 'WebPage'
+  if (c === 'person' || c === 'author' || c === 'teammember') return 'Person'
+  return 'WebPage'
+}
+
+const jsonLdSchemas = buildJsonLd()
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <title>{metaTitle}</title>
+    {metaDescription && <meta name="description" content={metaDescription} />}
+    <meta name="robots" content={robotsContent} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={ogTitle} />
+    {ogDescription && <meta property="og:description" content={ogDescription} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={siteName} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogType === 'article' && publishedAt && <meta property="article:published_time" content={publishedAt} />}
+    {ogType === 'article' && updatedAt && <meta property="article:modified_time" content={updatedAt} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={ogTitle} />
+    {ogDescription && <meta name="twitter:description" content={ogDescription} />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    {twitterSite && <meta name="twitter:site" content={twitterSite} />}
+
+    <!-- Structured Data -->
+    {jsonLdSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+
+    <!-- Performance -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+
     <link rel="stylesheet" href="/global.css" />
   </head>
   <body>
     <header class="site-header">
       <nav class="container">
-        <a href="/" class="site-name">CMS</a>
+        <a href="/" class="site-name">{siteName}</a>
         <ul class="nav-links">
           <li><a href="/article">Articles</a></li>
           <li><a href="/project">Projects</a></li>

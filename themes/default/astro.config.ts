@@ -5,6 +5,10 @@ const port = parseInt(process.env.ASTRO_INTERNAL_PORT || '4321')
 export default defineConfig({
   server: { port },
   output: 'server',
+  prefetch: {
+    defaultStrategy: 'hover',
+  },
+  compressHTML: true,
   vite: {
     server: {
       hmr: {
