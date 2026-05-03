@@ -120,7 +120,7 @@ pluginRoutes.get('/admin/plugins/available', requireAuth, requirePermission('set
   return c.json({ plugins })
 })
 
-// Install a plugin from GitHub
+// Install a plugin from GitHub — installs, registers, and activates without restart
 pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('settings'), async (c) => {
   const body = await c.req.json<{ repo: string; name: string }>()
 
@@ -129,9 +129,11 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
   }
 
   try {
+    // 1. Install from GitHub
     const { $ } = await import('bun')
     await $`bun add github:${body.repo}`.quiet()
 
+    // 2. Add to cms.config.ts
     if (body.name) {
       try {
         const { readFileSync, writeFileSync } = await import('node:fs')
@@ -150,7 +152,38 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
       } catch {}
     }
 
-    return c.json({ success: true, message: 'Plugin installed. Restart the CMS to activate.' })
+    // 3. Hot-load the plugin — register it without restart
+    let activated = false
+    if (body.name) {
+      try {
+        const { getServerApp } = await import('../../api/server')
+        const { createPluginContext } = await import('../../plugins/context')
+        const app = getServerApp()
+
+        if (app) {
+          const mod = await import(body.name)
+          const definition = mod.default ?? mod
+
+          if (definition && typeof definition.setup === 'function') {
+            const registry = getPluginRegistry()
+            const trust = body.name.startsWith('@kritano/') ? 'trusted' as const : 'sandboxed' as const
+            registry.register(definition, trust, 'npm')
+
+            const context = createPluginContext(definition, registry, app)
+            await definition.setup(context)
+            activated = true
+          }
+        }
+      } catch (err) {
+        console.warn(`[CMS] Hot-load of plugin "${body.name}" failed: ${err}. Will activate on restart.`)
+      }
+    }
+
+    return c.json({
+      success: true,
+      message: activated ? 'Plugin installed and activated.' : 'Plugin installed. Restart the CMS to activate.',
+      activated,
+    })
   } catch (err) {
     return c.json({
       error: { code: 'INSTALL_FAILED', message: err instanceof Error ? err.message : 'Installation failed' },

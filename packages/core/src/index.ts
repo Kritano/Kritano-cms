@@ -56,7 +56,7 @@ export {
 } from './db'
 
 // API server
-export { createServer, startServer } from './api/server'
+export { createServer, startServer, getServerApp } from './api/server'
 export { createApiRouter } from './api/router'
 export { requireAuth, optionalAuth, requireScope, signToken, signRefreshToken, verifyToken } from './api/middleware/auth'
 export { requirePermission } from './api/middleware/permission'

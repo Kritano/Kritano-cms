@@ -14,8 +14,15 @@ import { getPluginRegistry } from '../plugins/registry'
 import { isSearchAvailable, syncSchemas } from '../search'
 import { installerGuard, installerRoutes } from '../installer'
 
+let _serverApp: Hono | null = null
+
+export function getServerApp(): Hono | null {
+  return _serverApp
+}
+
 export function createServer(config: CmsConfig): Hono {
   const app = new Hono()
+  _serverApp = app
 
   // Global middleware
   app.use('*', corsMiddleware)
