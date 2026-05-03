@@ -106,22 +106,22 @@ function InstalledTab() {
 
   const { data: detailData } = useQuery({
     queryKey: ['plugin-detail', selectedPlugin],
-    queryFn: () => api<{ data: PluginDetail }>(`/admin/plugins/${encodeURIComponent(selectedPlugin!)}`),
+    queryFn: () => api<{ data: PluginDetail }>(`/admin/plugins/detail?name=${encodeURIComponent(selectedPlugin!)}`),
     enabled: !!selectedPlugin,
   })
 
   const enableMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}/enable`, { method: 'POST' }),
+    mutationFn: (name: string) => api('/admin/plugins/enable', { method: 'POST', body: { name } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   })
 
   const disableMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}/disable`, { method: 'POST' }),
+    mutationFn: (name: string) => api('/admin/plugins/disable', { method: 'POST', body: { name } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   })
 
   const uninstallMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    mutationFn: (name: string) => api('/admin/plugins/uninstall', { method: 'POST', body: { name } }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['plugins'] }); setSelectedPlugin(null) },
   })
 
@@ -189,7 +189,7 @@ function InstalledTab() {
               <div className="space-y-2 text-sm text-gray-600">
                 <div><span className="font-medium text-gray-900">Version:</span> {detail.version}</div>
                 <div><span className="font-medium text-gray-900">Author:</span> {detail.author}</div>
-                <div><span className="font-medium text-gray-900">Source:</span> {detail.source}</div>
+                <div><span className="font-medium text-gray-900">Source:</span> {detail.source === 'local' ? 'Local' : 'Package'}</div>
                 <div className="flex items-center gap-2"><span className="font-medium text-gray-900">Trust:</span> {trustBadge(detail.trust, detail.source)}</div>
               </div>
               <p className="text-sm text-gray-600">{detail.description}</p>

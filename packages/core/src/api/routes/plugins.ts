@@ -1,4 +1,6 @@
 import { Hono } from 'hono'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { getClient } from '../../db/client'
 import { requireAuth } from '../middleware/auth'
 import type { AuthEnv } from '../middleware/auth'
@@ -128,17 +130,16 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
   }
 
   try {
-    // 1. Install from GitHub
+    // 1. Install from GitHub (run from project root)
     const { $ } = await import('bun')
-    await $`bun add github:${body.repo}`.quiet()
+    const projectRoot = process.cwd()
+    await $`cd ${projectRoot} && bun add github:${body.repo}`
 
     // 2. Add to cms.config.ts
     if (body.name) {
       try {
-        const { readFileSync, writeFileSync } = await import('node:fs')
-        const { resolve } = await import('node:path')
-        const configPath = resolve(process.cwd(), 'cms.config.ts')
-        let content = readFileSync(configPath, 'utf-8')
+        const configPath = path.resolve(process.cwd(), 'cms.config.ts')
+        let content = fs.readFileSync(configPath, 'utf-8')
 
         if (!content.includes(body.name)) {
           if (content.includes('plugins:')) {
@@ -152,7 +153,7 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
               content = content.slice(0, lastClose) + `  plugins: [\n    '${body.name}',\n  ],\n` + content.slice(lastClose)
             }
           }
-          writeFileSync(configPath, content, 'utf-8')
+          fs.writeFileSync(configPath, content, 'utf-8')
         }
       } catch (err) {
         console.warn(`[CMS] Failed to update cms.config.ts: ${err}`)
@@ -198,9 +199,10 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
   }
 })
 
-// Get plugin detail + current settings
-pluginRoutes.get('/admin/plugins/:name', requireAuth, requirePermission('settings'), async (c) => {
-  const name = c.req.param('name')
+// Get plugin detail + current settings (name via query param to handle scoped packages)
+pluginRoutes.get('/admin/plugins/detail', requireAuth, requirePermission('settings'), async (c) => {
+  const name = c.req.query('name')
+  if (!name) return c.json({ error: { code: 'VALIDATION', message: 'name query param required' } }, 400)
   const registry = getPluginRegistry()
   const plugin = registry.get(name)
 
@@ -238,8 +240,9 @@ pluginRoutes.get('/admin/plugins/:name', requireAuth, requirePermission('setting
 })
 
 // Update plugin settings
-pluginRoutes.patch('/admin/plugins/:name/settings', requireAuth, requirePermission('settings'), async (c) => {
-  const name = c.req.param('name')
+pluginRoutes.post('/admin/plugins/settings', requireAuth, requirePermission('settings'), async (c) => {
+  const bodyRaw = await c.req.json<{ name: string; settings: Record<string, unknown> }>()
+  const name = bodyRaw.name
   const registry = getPluginRegistry()
   const plugin = registry.get(name)
 
@@ -247,22 +250,21 @@ pluginRoutes.patch('/admin/plugins/:name/settings', requireAuth, requirePermissi
     return c.json({ error: { code: 'NOT_FOUND', message: 'Plugin not found' } }, 404)
   }
 
-  const body = await c.req.json<{ settings: Record<string, unknown> }>()
   const sql = getClient()
 
   await sql`
     INSERT INTO plugin_settings (plugin_name, settings, enabled, trust, version)
-    VALUES (${name}, ${JSON.stringify(body.settings)}::jsonb, true, ${plugin.trust}, ${plugin.definition.version})
+    VALUES (${name}, ${JSON.stringify(bodyRaw.settings)}::jsonb, true, ${plugin.trust}, ${plugin.definition.version})
     ON CONFLICT (plugin_name)
-    DO UPDATE SET settings = ${JSON.stringify(body.settings)}::jsonb
+    DO UPDATE SET settings = ${JSON.stringify(bodyRaw.settings)}::jsonb
   `
 
   return c.json({ success: true })
 })
 
-// Enable plugin
-pluginRoutes.post('/admin/plugins/:name/enable', requireAuth, requirePermission('settings'), async (c) => {
-  const name = c.req.param('name')
+// Enable plugin — name in body to avoid URL encoding issues with scoped packages
+pluginRoutes.post('/admin/plugins/enable', requireAuth, requirePermission('settings'), async (c) => {
+  const { name } = await c.req.json<{ name: string }>()
   const registry = getPluginRegistry()
   const plugin = registry.get(name)
 
@@ -283,8 +285,8 @@ pluginRoutes.post('/admin/plugins/:name/enable', requireAuth, requirePermission(
 })
 
 // Disable plugin
-pluginRoutes.post('/admin/plugins/:name/disable', requireAuth, requirePermission('settings'), async (c) => {
-  const name = c.req.param('name')
+pluginRoutes.post('/admin/plugins/disable', requireAuth, requirePermission('settings'), async (c) => {
+  const { name } = await c.req.json<{ name: string }>()
   const registry = getPluginRegistry()
   const plugin = registry.get(name)
 
@@ -305,47 +307,66 @@ pluginRoutes.post('/admin/plugins/:name/disable', requireAuth, requirePermission
 })
 
 // Uninstall plugin — removes package, cleans config, disables in registry
-pluginRoutes.delete('/admin/plugins/:name', requireAuth, requirePermission('settings'), async (c) => {
-  const name = c.req.param('name')
-  const registry = getPluginRegistry()
-  const plugin = registry.get(name)
+pluginRoutes.post('/admin/plugins/uninstall', requireAuth, requirePermission('settings'), async (c) => {
+  const body = await c.req.json<{ name: string }>()
+  const name = body?.name
 
-  if (!plugin) {
-    return c.json({ error: { code: 'NOT_FOUND', message: 'Plugin not found' } }, 404)
+  if (!name) {
+    return c.json({ error: { code: 'VALIDATION', message: 'Plugin name is required' } }, 400)
   }
 
-  const sql = getClient()
+  const projectRoot = process.cwd()
+  const log: string[] = []
 
   // 1. Remove plugin data from database
-  await sql`DELETE FROM plugin_settings WHERE plugin_name = ${name}`
-  await sql`DELETE FROM plugin_storage WHERE plugin_name = ${name}`
+  try {
+    const sql = getClient()
+    await sql`DELETE FROM plugin_settings WHERE plugin_name = ${name}`
+    await sql`DELETE FROM plugin_storage WHERE plugin_name = ${name}`
+    log.push('Database cleaned')
+  } catch { log.push('Database cleanup skipped') }
 
   // 2. Remove from cms.config.ts
   try {
-    const { readFileSync, writeFileSync } = await import('node:fs')
-    const { resolve } = await import('node:path')
-    const configPath = resolve(process.cwd(), 'cms.config.ts')
-    let content = readFileSync(configPath, 'utf-8')
-
-    // Remove the plugin entry (handles 'name' and "name" formats)
+    const configPath = path.resolve(projectRoot, 'cms.config.ts')
+    let content = fs.readFileSync(configPath, 'utf-8')
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     content = content.replace(new RegExp(`\\s*'${escaped}'\\s*,?\\s*\\n?`, 'g'), '\n')
     content = content.replace(new RegExp(`\\s*"${escaped}"\\s*,?\\s*\\n?`, 'g'), '\n')
-    // Clean up empty plugins array
     content = content.replace(/plugins:\s*\[\s*\]\s*,?\s*\n?/g, '')
+    fs.writeFileSync(configPath, content, 'utf-8')
+    log.push('Removed from cms.config.ts')
+  } catch { log.push('Config cleanup skipped') }
 
-    writeFileSync(configPath, content, 'utf-8')
-  } catch {}
-
-  // 3. Remove npm package
+  // 3. Remove from node_modules
   try {
-    const { $ } = await import('bun')
-    await $`bun remove ${name}`.quiet()
+    const pkgDir = path.resolve(projectRoot, 'node_modules', ...name.split('/'))
+    fs.rmSync(pkgDir, { recursive: true, force: true })
+    log.push('Removed from node_modules')
+  } catch { log.push('node_modules cleanup skipped') }
+
+  // 4. Remove from package.json
+  try {
+    const pkgPath = path.resolve(projectRoot, 'package.json')
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    if (pkg.dependencies?.[name]) {
+      delete pkg.dependencies[name]
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8')
+      log.push('Removed from package.json')
+    }
+  } catch { log.push('package.json cleanup skipped') }
+
+  // 5. Disable in registry if loaded
+  try {
+    const registry = getPluginRegistry()
+    const plugin = registry.get(name)
+    if (plugin) plugin.enabled = false
   } catch {}
 
-  // 4. Disable in registry
-  plugin.enabled = false
+  console.log(`[CMS] Uninstall ${name}: ${log.join(', ')}`)
 
-  return c.json({ success: true, message: 'Plugin uninstalled.' })
+  // Send response before any potential crash from deleted modules
+  const response = c.json({ success: true, message: 'Plugin uninstalled.', log })
+  return response
 })
 
