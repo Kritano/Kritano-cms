@@ -302,49 +302,50 @@ pluginRoutes.post('/admin/plugins/uninstall', requireAuth, requirePermission('se
     const sql = getClient()
     await sql`DELETE FROM plugin_settings WHERE plugin_name = ${name}`
     await sql`DELETE FROM plugin_storage WHERE plugin_name = ${name}`
-    log.push('Database cleaned')
-  } catch { log.push('Database cleanup skipped') }
+  } catch {}
 
-  // 2. Remove from cms.config.ts
-  try {
-    const configPath = path.resolve(projectRoot, 'cms.config.ts')
-    let content = fs.readFileSync(configPath, 'utf-8')
-    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    content = content.replace(new RegExp(`\\s*'${escaped}'\\s*,?\\s*\\n?`, 'g'), '\n')
-    content = content.replace(new RegExp(`\\s*"${escaped}"\\s*,?\\s*\\n?`, 'g'), '\n')
-    content = content.replace(/plugins:\s*\[\s*\]\s*,?\s*\n?/g, '')
-    fs.writeFileSync(configPath, content, 'utf-8')
-    log.push('Removed from cms.config.ts')
-  } catch { log.push('Config cleanup skipped') }
-
-  // 3. Remove from package.json
-  try {
-    const pkgPath = path.resolve(projectRoot, 'package.json')
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-    if (pkg.dependencies?.[name]) {
-      delete pkg.dependencies[name]
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8')
-      log.push('Removed from package.json')
-    }
-  } catch { log.push('package.json cleanup skipped') }
-
-  // 4. Disable in registry if loaded
+  // 2. Disable in registry
   try {
     const registry = getPluginRegistry()
     const plugin = registry.get(name)
     if (plugin) plugin.enabled = false
   } catch {}
 
-  log.push('Plugin disabled')
-  console.log(`[CMS] Uninstall ${name}: ${log.join(', ')}`)
+  // 3. Send response FIRST — before touching any files that trigger --watch restart
+  const response = c.json({ success: true, message: 'Plugin uninstalled.' })
 
-  // 5. Delete node_modules AFTER response is sent (async, non-blocking)
-  // Deleting while server is running can crash Bun if module is cached
-  const pkgDir = path.resolve(projectRoot, 'node_modules', ...name.split('/'))
+  // 4. Defer all file changes so response sends before server restarts
   setTimeout(() => {
-    try { fs.rmSync(pkgDir, { recursive: true, force: true }) } catch {}
-  }, 500)
+    // Remove from cms.config.ts
+    try {
+      const configPath = path.resolve(projectRoot, 'cms.config.ts')
+      let content = fs.readFileSync(configPath, 'utf-8')
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      content = content.replace(new RegExp(`\\s*'${escaped}'\\s*,?\\s*\\n?`, 'g'), '\n')
+      content = content.replace(new RegExp(`\\s*"${escaped}"\\s*,?\\s*\\n?`, 'g'), '\n')
+      content = content.replace(/plugins:\s*\[\s*\]\s*,?\s*\n?/g, '')
+      fs.writeFileSync(configPath, content, 'utf-8')
+    } catch {}
 
-  return c.json({ success: true, message: 'Plugin uninstalled. Restart to complete removal.' })
+    // Remove from package.json
+    try {
+      const pkgPath = path.resolve(projectRoot, 'package.json')
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+      if (pkg.dependencies?.[name]) {
+        delete pkg.dependencies[name]
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8')
+      }
+    } catch {}
+
+    // Remove from node_modules
+    try {
+      const pkgDir = path.resolve(projectRoot, 'node_modules', ...name.split('/'))
+      fs.rmSync(pkgDir, { recursive: true, force: true })
+    } catch {}
+
+    console.log(`[CMS] Uninstalled ${name}`)
+  }, 200)
+
+  return response
 })
 
