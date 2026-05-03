@@ -338,14 +338,7 @@ pluginRoutes.post('/admin/plugins/uninstall', requireAuth, requirePermission('se
     log.push('Removed from cms.config.ts')
   } catch { log.push('Config cleanup skipped') }
 
-  // 3. Remove from node_modules
-  try {
-    const pkgDir = path.resolve(projectRoot, 'node_modules', ...name.split('/'))
-    fs.rmSync(pkgDir, { recursive: true, force: true })
-    log.push('Removed from node_modules')
-  } catch { log.push('node_modules cleanup skipped') }
-
-  // 4. Remove from package.json
+  // 3. Remove from package.json
   try {
     const pkgPath = path.resolve(projectRoot, 'package.json')
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
@@ -356,17 +349,23 @@ pluginRoutes.post('/admin/plugins/uninstall', requireAuth, requirePermission('se
     }
   } catch { log.push('package.json cleanup skipped') }
 
-  // 5. Disable in registry if loaded
+  // 4. Disable in registry if loaded
   try {
     const registry = getPluginRegistry()
     const plugin = registry.get(name)
     if (plugin) plugin.enabled = false
   } catch {}
 
+  log.push('Plugin disabled')
   console.log(`[CMS] Uninstall ${name}: ${log.join(', ')}`)
 
-  // Send response before any potential crash from deleted modules
-  const response = c.json({ success: true, message: 'Plugin uninstalled.', log })
-  return response
+  // 5. Delete node_modules AFTER response is sent (async, non-blocking)
+  // Deleting while server is running can crash Bun if module is cached
+  const pkgDir = path.resolve(projectRoot, 'node_modules', ...name.split('/'))
+  setTimeout(() => {
+    try { fs.rmSync(pkgDir, { recursive: true, force: true }) } catch {}
+  }, 500)
+
+  return c.json({ success: true, message: 'Plugin uninstalled. Restart to complete removal.' })
 })
 
