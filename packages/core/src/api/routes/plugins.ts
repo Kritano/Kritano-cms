@@ -131,67 +131,46 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
 
   try {
     // 1. Install from GitHub (run from project root)
-    const { $ } = await import('bun')
     const projectRoot = process.cwd()
-    await $`cd ${projectRoot} && bun add github:${body.repo}`
+    const proc = Bun.spawn(['bun', 'add', `github:${body.repo}`], {
+      cwd: projectRoot,
+      stdout: 'ignore',
+      stderr: 'ignore',
+    })
+    await proc.exited
 
-    // 2. Add to cms.config.ts
-    if (body.name) {
+    // 2. Send response BEFORE modifying cms.config.ts
+    // (bun --watch restarts the server when config changes, killing in-flight requests)
+    const response = c.json({
+      success: true,
+      message: 'Plugin installed. Restart the CMS to activate.',
+    })
+
+    // 3. Add to cms.config.ts after response is queued (deferred so response sends first)
+    setTimeout(() => {
+      if (!body.name) return
       try {
-        const configPath = path.resolve(process.cwd(), 'cms.config.ts')
+        const configPath = path.resolve(projectRoot, 'cms.config.ts')
         let content = fs.readFileSync(configPath, 'utf-8')
 
         if (!content.includes(body.name)) {
           if (content.includes('plugins:')) {
-            // Add to existing plugins array
             content = content.replace(/plugins:\s*\[/, `plugins: [\n    '${body.name}',`)
           } else {
-            // Add plugins array before the closing of defineConfig
-            // Find the last }) which closes defineConfig
             const lastClose = content.lastIndexOf('})')
             if (lastClose !== -1) {
               content = content.slice(0, lastClose) + `  plugins: [\n    '${body.name}',\n  ],\n` + content.slice(lastClose)
             }
           }
           fs.writeFileSync(configPath, content, 'utf-8')
+          console.log(`[CMS] Added ${body.name} to cms.config.ts`)
         }
       } catch (err) {
         console.warn(`[CMS] Failed to update cms.config.ts: ${err}`)
       }
-    }
+    }, 100)
 
-    // 3. Hot-load the plugin — register it without restart
-    let activated = false
-    if (body.name) {
-      try {
-        const { getServerApp } = await import('../../api/server')
-        const { createPluginContext } = await import('../../plugins/context')
-        const app = getServerApp()
-
-        if (app) {
-          const mod = await import(body.name)
-          const definition = mod.default ?? mod
-
-          if (definition && typeof definition.setup === 'function') {
-            const registry = getPluginRegistry()
-            const trust = body.name.startsWith('@kritano/') ? 'trusted' as const : 'sandboxed' as const
-            registry.register(definition, trust, 'npm')
-
-            const context = createPluginContext(definition, registry, app)
-            await definition.setup(context)
-            activated = true
-          }
-        }
-      } catch (err) {
-        console.warn(`[CMS] Hot-load of plugin "${body.name}" failed: ${err}. Will activate on restart.`)
-      }
-    }
-
-    return c.json({
-      success: true,
-      message: activated ? 'Plugin installed and activated.' : 'Plugin installed. Restart the CMS to activate.',
-      activated,
-    })
+    return response
   } catch (err) {
     return c.json({
       error: { code: 'INSTALL_FAILED', message: err instanceof Error ? err.message : 'Installation failed' },
