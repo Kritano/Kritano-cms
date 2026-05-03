@@ -9,6 +9,9 @@ import { getPluginRegistry } from '../../plugins/registry'
 
 export const pluginRoutes = new Hono<AuthEnv>()
 
+// Track uninstalled plugins so they're hidden from the list until restart
+const uninstalledPlugins = new Set<string>()
+
 // List installed plugins with status
 pluginRoutes.get('/admin/plugins', requireAuth, requirePermission('settings'), async (c) => {
   const registry = getPluginRegistry()
@@ -22,7 +25,7 @@ pluginRoutes.get('/admin/plugins', requireAuth, requirePermission('settings'), a
     settingsMap.set(r.plugin_name as string, r)
   }
 
-  const plugins = registry.loaded.map((plugin) => {
+  const plugins = registry.loaded.filter((p) => !uninstalledPlugins.has(p.definition.name)).map((plugin) => {
     const dbRecord = settingsMap.get(plugin.definition.name)
     return {
       name: plugin.definition.name,
@@ -143,7 +146,7 @@ pluginRoutes.post('/admin/plugins/install', requireAuth, requirePermission('sett
     // (bun --watch restarts the server when config changes, killing in-flight requests)
     const response = c.json({
       success: true,
-      message: 'Plugin installed. Restart the CMS to activate.',
+      message: 'Plugin installed successfully.',
     })
 
     // 3. Add to cms.config.ts after response is queued (deferred so response sends first)
@@ -304,12 +307,13 @@ pluginRoutes.post('/admin/plugins/uninstall', requireAuth, requirePermission('se
     await sql`DELETE FROM plugin_storage WHERE plugin_name = ${name}`
   } catch {}
 
-  // 2. Disable in registry
+  // 2. Disable in registry and mark as uninstalled
   try {
     const registry = getPluginRegistry()
     const plugin = registry.get(name)
     if (plugin) plugin.enabled = false
   } catch {}
+  uninstalledPlugins.add(name)
 
   // 3. Send response FIRST — before touching any files that trigger --watch restart
   const response = c.json({ success: true, message: 'Plugin uninstalled.' })
