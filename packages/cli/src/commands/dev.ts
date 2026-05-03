@@ -152,11 +152,24 @@ export async function dev() {
   const cmsRoot = getCmsRoot()
   const adminDistPath = resolve(cmsRoot, 'packages/admin/dist')
 
-  // Ensure admin is built
-  if (!existsSync(resolve(adminDistPath, 'index.html'))) {
-    log.step('Building admin UI (first run)…')
+  // Ensure admin is built and up to date
+  const adminDir = resolve(cmsRoot, 'packages/admin')
+  const adminIndexPath = resolve(adminDistPath, 'index.html')
+  let needsBuild = !existsSync(adminIndexPath)
+
+  // Check if source is newer than dist (CMS was updated)
+  if (!needsBuild) {
     try {
-      const adminDir = resolve(cmsRoot, 'packages/admin')
+      const { statSync } = await import('node:fs')
+      const distTime = statSync(adminIndexPath).mtimeMs
+      const routerTime = statSync(resolve(adminDir, 'src/router.tsx')).mtimeMs
+      if (routerTime > distTime) needsBuild = true
+    } catch {}
+  }
+
+  if (needsBuild) {
+    log.step('Building admin UI…')
+    try {
       await $`bun run --cwd ${adminDir} build`.quiet()
       log.success('Admin built')
     } catch (err: any) {

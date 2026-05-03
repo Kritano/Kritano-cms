@@ -61,13 +61,14 @@ export function checkConflicts(
 
     // Check admin section conflicts
     for (const section of plugin.adminSections) {
-      const existing = adminSections.get(section)
+      const sectionPath = typeof section === 'string' ? section : section.path
+      const existing = adminSections.get(sectionPath)
       if (existing) {
         errors.push(
-          `Plugin conflict: "${existing}" and "${name}" both register admin section at ${section}`,
+          `Plugin conflict: "${existing}" and "${name}" both register admin section at ${sectionPath}`,
         )
       } else {
-        adminSections.set(section, name)
+        adminSections.set(sectionPath, name)
       }
     }
   }

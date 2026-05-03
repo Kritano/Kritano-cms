@@ -140,7 +140,11 @@ export interface LoadedPlugin {
     }>;
     fieldTypes: string[];
     collections: string[];
-    adminSections: string[];
+    adminSections: Array<{
+        label: string;
+        icon: string;
+        path: string;
+    }>;
     editorTabs: string[];
     dashboardWidgets: string[];
     settingsPages: string[];
