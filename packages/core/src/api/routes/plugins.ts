@@ -304,7 +304,7 @@ pluginRoutes.post('/admin/plugins/:name/disable', requireAuth, requirePermission
   return c.json({ success: true })
 })
 
-// Uninstall plugin
+// Uninstall plugin — removes package, cleans config, disables in registry
 pluginRoutes.delete('/admin/plugins/:name', requireAuth, requirePermission('settings'), async (c) => {
   const name = c.req.param('name')
   const registry = getPluginRegistry()
@@ -316,13 +316,36 @@ pluginRoutes.delete('/admin/plugins/:name', requireAuth, requirePermission('sett
 
   const sql = getClient()
 
-  // Remove plugin data
+  // 1. Remove plugin data from database
   await sql`DELETE FROM plugin_settings WHERE plugin_name = ${name}`
   await sql`DELETE FROM plugin_storage WHERE plugin_name = ${name}`
 
-  // Disable in registry (full removal requires restart)
+  // 2. Remove from cms.config.ts
+  try {
+    const { readFileSync, writeFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const configPath = resolve(process.cwd(), 'cms.config.ts')
+    let content = readFileSync(configPath, 'utf-8')
+
+    // Remove the plugin entry (handles 'name' and "name" formats)
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    content = content.replace(new RegExp(`\\s*'${escaped}'\\s*,?\\s*\\n?`, 'g'), '\n')
+    content = content.replace(new RegExp(`\\s*"${escaped}"\\s*,?\\s*\\n?`, 'g'), '\n')
+    // Clean up empty plugins array
+    content = content.replace(/plugins:\s*\[\s*\]\s*,?\s*\n?/g, '')
+
+    writeFileSync(configPath, content, 'utf-8')
+  } catch {}
+
+  // 3. Remove npm package
+  try {
+    const { $ } = await import('bun')
+    await $`bun remove ${name}`.quiet()
+  } catch {}
+
+  // 4. Disable in registry
   plugin.enabled = false
 
-  return c.json({ success: true, message: 'Plugin disabled. Restart the CMS to fully remove.' })
+  return c.json({ success: true, message: 'Plugin uninstalled.' })
 })
 

@@ -106,22 +106,22 @@ function InstalledTab() {
 
   const { data: detailData } = useQuery({
     queryKey: ['plugin-detail', selectedPlugin],
-    queryFn: () => api<{ data: PluginDetail }>(`/admin/plugins/${selectedPlugin}`),
+    queryFn: () => api<{ data: PluginDetail }>(`/admin/plugins/${encodeURIComponent(selectedPlugin!)}`),
     enabled: !!selectedPlugin,
   })
 
   const enableMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${name}/enable`, { method: 'POST' }),
+    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}/enable`, { method: 'POST' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   })
 
   const disableMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${name}/disable`, { method: 'POST' }),
+    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}/disable`, { method: 'POST' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   })
 
   const uninstallMutation = useMutation({
-    mutationFn: (name: string) => api(`/admin/plugins/${name}`, { method: 'DELETE' }),
+    mutationFn: (name: string) => api(`/admin/plugins/${encodeURIComponent(name)}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['plugins'] }); setSelectedPlugin(null) },
   })
 
