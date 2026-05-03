@@ -122,7 +122,12 @@ function InstalledTab() {
 
   const uninstallMutation = useMutation({
     mutationFn: (name: string) => api('/admin/plugins/uninstall', { method: 'POST', body: { name } }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['plugins'] }); setSelectedPlugin(null) },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['plugins'] })
+      queryClient.invalidateQueries({ queryKey: ['plugins-available'] })
+      queryClient.invalidateQueries({ queryKey: ['plugin-registry'] })
+      setSelectedPlugin(null)
+    },
   })
 
   const plugins = data?.data ?? []

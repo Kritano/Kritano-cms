@@ -53,7 +53,7 @@ pluginRoutes.get('/admin/plugins', requireAuth, requirePermission('settings'), a
 // Plugin UI registry (sections, tabs, widgets)
 pluginRoutes.get('/admin/plugins/registry', requireAuth, async (c) => {
   const registry = getPluginRegistry()
-  const plugins = registry.enabledPlugins
+  const plugins = registry.enabledPlugins.filter((p) => !uninstalledPlugins.has(p.definition.name))
 
   const sections: Array<{ pluginName: string; label: string; icon: string; path: string; componentUrl?: string }> = []
   const editorTabs: Array<{ pluginName: string; label: string; collection?: string | string[] }> = []
