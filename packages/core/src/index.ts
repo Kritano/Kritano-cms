@@ -5,6 +5,8 @@ export { isConfigured, installerGuard, installerRoutes } from './installer'
 export { defineConfig } from './schema/defineConfig'
 export { defineCollection } from './schema/defineCollection'
 export { validateSchema, SchemaValidationError } from './schema/validate'
+export { addForm, getDeclaredForms, type FormFieldConfig, type FormConfig } from './schema/addForm'
+export { syncDeclaredForms } from './lib/form-sync'
 
 // Field builders
 export {

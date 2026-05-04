@@ -240,7 +240,7 @@ userRoutes.post('/admin/users', requireAuth, requirePermission('users'), async (
   if (body.roleId) {
     const roleCheck = await sql`SELECT id FROM roles WHERE id = ${body.roleId} LIMIT 1`
     if (roleCheck.length > 0) {
-      await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${newUser.id}, ${body.roleId})`
+      await sql`INSERT INTO user_roles (user_id, role_id) VALUES (${newUser.id as string}, ${body.roleId as string})`
     }
   }
 

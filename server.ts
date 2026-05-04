@@ -3,7 +3,7 @@
 import { resolve } from 'node:path'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
-import { createServer, loadPlugins, fireReadyHook } from '@kritano/cms/core'
+import { createServer, loadPlugins, fireReadyHook, syncDeclaredForms } from '@kritano/cms/core'
 
 // Load config from the project root (process.cwd), not the CMS package
 const configPath = resolve(process.cwd(), 'cms.config')
@@ -20,6 +20,9 @@ if (config.plugins && config.plugins.length > 0) {
     process.exit(1)
   }
 }
+
+// Sync forms declared in cms.config.ts to the database
+syncDeclaredForms().catch((err) => console.warn(`[CMS] Form sync: ${err}`))
 
 // Serve admin static files in production
 // In dev, admin is served by Vite with HMR on a separate port

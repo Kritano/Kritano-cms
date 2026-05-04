@@ -375,3 +375,31 @@ formRoutes.post('/forms/:slug/submit', async (c) => {
   const redirectUrl = settings.redirectUrl as string || `${referer}${referer.includes('?') ? '&' : '?'}submitted=true`
   return c.redirect(redirectUrl, 302)
 })
+
+// ============================================================
+// Public form endpoint — serves form definition by slug
+// Used by frontend components to render forms dynamically
+// ============================================================
+
+formRoutes.get('/forms/definition/:slug', async (c) => {
+  const sql = getClient()
+  const formSlug = c.req.param('slug')
+
+  const rows = await sql`SELECT id, name, slug, fields, settings FROM forms WHERE slug = ${formSlug} LIMIT 1`
+
+  if (rows.length === 0) {
+    return c.json({ error: { code: 'NOT_FOUND', message: 'Form not found' } }, 404)
+  }
+
+  const form = rows[0] as Record<string, unknown>
+  return c.json({
+    data: {
+      id: form.id,
+      name: form.name,
+      slug: form.slug,
+      fields: form.fields,
+      settings: form.settings,
+      submitUrl: `/api/forms/${form.id}/submit`,
+    },
+  })
+})
