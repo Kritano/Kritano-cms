@@ -23,29 +23,9 @@ export function markConfigured(): void {
 }
 
 /**
- * Middleware that redirects to /install if the CMS is not configured.
- * Only applies to / and /admin routes. API routes are unaffected.
+ * Middleware — no-op. Installer guard disabled.
  */
-export const installerGuard = createMiddleware(async (c, next) => {
-  const path = c.req.path
-
-  // Don't guard API routes, static assets, or the installer itself
-  if (
-    path.startsWith('/api') ||
-    path.startsWith('/admin/install') ||
-    path.startsWith('/@') ||
-    path.startsWith('/__vite') ||
-    path.includes('.')
-  ) {
-    return next()
-  }
-
-  const configured = await isConfigured()
-
-  if (!configured && (path === '/' || path.startsWith('/admin'))) {
-    return c.redirect('/admin/install')
-  }
-
+export const installerGuard = createMiddleware(async (_c, next) => {
   return next()
 })
 
