@@ -32,7 +32,7 @@ export const installerGuard = createMiddleware(async (c, next) => {
   // Don't guard API routes, static assets, or the installer itself
   if (
     path.startsWith('/api') ||
-    path.startsWith('/install') ||
+    path.startsWith('/admin/install') ||
     path.startsWith('/@') ||
     path.startsWith('/__vite') ||
     path.includes('.')
@@ -43,7 +43,7 @@ export const installerGuard = createMiddleware(async (c, next) => {
   const configured = await isConfigured()
 
   if (!configured && (path === '/' || path.startsWith('/admin'))) {
-    return c.redirect('/install')
+    return c.redirect('/admin/install')
   }
 
   return next()
