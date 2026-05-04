@@ -86,8 +86,8 @@ export function UserDetail({ id }: { id: string }) {
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     const updates: { name?: string; email?: string } = {}
-    if (editName !== (user.name || '')) updates.name = editName
-    if (editEmail !== user.email) updates.email = editEmail
+    if (editName !== (user?.name || '')) updates.name = editName
+    if (editEmail !== user?.email) updates.email = editEmail
     if (Object.keys(updates).length > 0) {
       updateUser.mutate(updates)
     }
