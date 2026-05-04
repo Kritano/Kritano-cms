@@ -1,7 +1,8 @@
 import { $ } from 'bun'
 import { resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { log } from '../utils/logger'
-import { loadConfig, getCmsRoot } from '../utils/config'
+import { loadConfig, getCmsRoot, getProjectRoot } from '../utils/config'
 
 export async function build() {
   log.header('Building CMS')
@@ -15,9 +16,12 @@ export async function build() {
     process.exit(1)
   }
 
+  const cmsRoot = getCmsRoot()
+  const projectRoot = getProjectRoot()
+
   // 2. Build admin UI
   log.step('Building admin UI…')
-  const adminDir = resolve(getCmsRoot(), 'packages/admin')
+  const adminDir = resolve(cmsRoot, 'packages/admin')
   try {
     await $`bun run --cwd ${adminDir} build`
     log.success('Admin built')
@@ -26,10 +30,21 @@ export async function build() {
     process.exit(1)
   }
 
-  // 3. Build frontend theme (Astro — when configured)
-  // For v0.1, the default theme is static Astro files
-  // A full Astro build would be: bun astro build --root themes/default
-  log.step('Frontend build skipped (Astro build will be configured in deployment)')
+  // 3. Build Astro frontend
+  const hasCustomTheme = existsSync(resolve(projectRoot, 'astro.config.mjs')) ||
+                         existsSync(resolve(projectRoot, 'astro.config.ts')) ||
+                         existsSync(resolve(projectRoot, 'src/pages'))
+  const themeDir = hasCustomTheme ? projectRoot : resolve(cmsRoot, 'themes/default')
+
+  log.step('Building frontend…')
+  try {
+    const apiPort = process.env.PORT || '3005'
+    await $`bunx astro build`.cwd(themeDir).env({ ...process.env, CMS_API_URL: `http://localhost:${apiPort}/api` })
+    log.success('Frontend built')
+  } catch (err: any) {
+    log.error(`Frontend build failed: ${err.message}`)
+    process.exit(1)
+  }
 
   log.success('Build complete')
 }

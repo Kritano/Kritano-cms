@@ -30,9 +30,10 @@ export async function syncDeclaredForms(): Promise<void> {
         `
         console.log(`[CMS] Form created: ${form.slug}`)
       } else if (form.fields.length > 0) {
-        // Update fields if declared inline and the form has no fields yet
+        // Always update fields/settings when declared inline — config is source of truth
         const existingFields = existing[0].fields as any[]
-        if (!existingFields || existingFields.length === 0) {
+        const fieldsChanged = JSON.stringify(existingFields) !== JSON.stringify(form.fields)
+        if (fieldsChanged) {
           await sql`
             UPDATE forms
             SET fields = ${sql.json(form.fields as any)},

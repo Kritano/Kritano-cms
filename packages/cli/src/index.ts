@@ -36,6 +36,11 @@ async function main() {
       await build()
       break
     }
+    case 'start': {
+      const { start } = await import('./commands/start')
+      await start()
+      break
+    }
     case 'search:sync': {
       const { searchSync } = await import('./commands/search')
       await searchSync()
@@ -89,6 +94,7 @@ async function main() {
       console.log('    migrate:create   Generate a new migration from schema changes')
       console.log('    generate         Generate TypeScript types from config')
       console.log('    build            Build the admin UI and frontend')
+      console.log('    start            Start production server')
       console.log('    search:sync      Re-index all published content')
       console.log('    search:clear     Clear all search indexes')
       console.log('    plugin:install   Install a plugin from npm')
