@@ -12,6 +12,7 @@ export interface SeoMetaInput {
   robotsIndex?: string | null
   robotsFollow?: string | null
   focusKeyword?: string | null
+  secondaryKeywords?: string | null
   structuredDataType?: string | null
   noIndex?: boolean
 
@@ -44,6 +45,15 @@ export function generateSeoMeta(input: SeoMetaInput): string {
   const ogType = input.ogType || 'website'
   const ogImage = input.ogImage || ''
   const twitterCard = input.twitterCard || 'summary_large_image'
+
+  // Keywords
+  const keywords = [
+    input.focusKeyword,
+    ...(input.secondaryKeywords ? input.secondaryKeywords.split(',').map(k => k.trim()) : []),
+  ].filter(Boolean).join(', ')
+  if (keywords) {
+    tags.push(`<meta name="keywords" content="${escapeAttr(keywords)}">`)
+  }
 
   // Robots
   const robotsIndex = input.noIndex ? 'noindex' : (input.robotsIndex || 'index')
@@ -132,6 +142,11 @@ export function generateJsonLd(input: SeoMetaInput): string {
         },
       }
       if (image) article.image = image
+      const articleKeywords = [
+        input.focusKeyword,
+        ...(input.secondaryKeywords ? input.secondaryKeywords.split(',').map(k => k.trim()) : []),
+      ].filter(Boolean).join(', ')
+      if (articleKeywords) article.keywords = articleKeywords
       if (input.authorName) {
         article.author = { '@type': 'Person', name: input.authorName }
       }

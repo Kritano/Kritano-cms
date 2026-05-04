@@ -16,21 +16,25 @@ function isJsonbField(field: FieldDefinition): boolean {
   return JSONB_TYPES.has(field.type)
 }
 
-function serializeValue(val: unknown, field: FieldDefinition): unknown {
+function serializeValue(val: unknown, field: FieldDefinition, sql?: any): unknown {
   if (val === null || val === undefined) return null
 
-  // For JSONB fields: ensure we always store proper JSON, not double-encoded strings
-  if (isJsonbField(field)) {
-    if (typeof val === 'string') {
-      // If it's a JSON string, parse then re-stringify to ensure clean storage
+  // For JSONB fields: use sql.json() to avoid double-encoding from the postgres driver
+  if (isJsonbField(field) && sql) {
+    let obj = val
+    // If value is a string, parse it to get the actual object
+    if (typeof obj === 'string') {
       try {
-        const parsed = JSON.parse(val)
-        return JSON.stringify(parsed)
+        obj = JSON.parse(obj)
+        // Handle triple-encoding: if parsed result is still a string, parse again
+        while (typeof obj === 'string') {
+          try { obj = JSON.parse(obj) } catch { break }
+        }
       } catch {
-        return val
+        return sql.json({})
       }
     }
-    return JSON.stringify(val)
+    return sql.json(obj)
   }
 
   if (typeof val === 'object') return JSON.stringify(val)
@@ -162,8 +166,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       if (body[fieldName] !== undefined) {
         columns.push(`"${colName}"`)
         const jsonb = isJsonbField(field as FieldDefinition)
-        placeholders.push(jsonb ? `$${idx}::jsonb` : `$${idx}`)
-        values.push(serializeValue(body[fieldName], field as FieldDefinition))
+        placeholders.push(`$${idx}`)
+        values.push(serializeValue(body[fieldName], field as FieldDefinition, sql))
         idx++
       }
     }
@@ -200,8 +204,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       if (body[fieldName] === undefined) continue
       const colName = fieldToColumnName(fieldName)
       const jsonb = isJsonbField(field as FieldDefinition)
-      setClauses.push(`"${colName}" = ${jsonb ? `$${idx}::jsonb` : `$${idx}`}`)
-      values.push(serializeValue(body[fieldName], field as FieldDefinition))
+      setClauses.push(`"${colName}" = ${`$${idx}`}`)
+      values.push(serializeValue(body[fieldName], field as FieldDefinition, sql))
       idx++
     }
 
@@ -257,8 +261,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
       if (body[fieldName] === undefined) continue
       const colName = fieldToColumnName(fieldName)
       const jsonb = isJsonbField(field as FieldDefinition)
-      setClauses.push(`"${colName}" = ${jsonb ? `$${idx}::jsonb` : `$${idx}`}`)
-      values.push(serializeValue(body[fieldName], field as FieldDefinition))
+      setClauses.push(`"${colName}" = ${`$${idx}`}`)
+      values.push(serializeValue(body[fieldName], field as FieldDefinition, sql))
       idx++
     }
 
@@ -483,8 +487,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     for (const [colName, value] of Object.entries(revisionData)) {
       if (excludeFields.has(colName)) continue
       if (typeof value === 'object' && value !== null) {
-        setClauses.push(`"${colName}" = $${idx}::jsonb`)
-        values.push(JSON.stringify(value))
+        setClauses.push(`"${colName}" = $${idx}`)
+        values.push(sql.json(value as any))
       } else {
         setClauses.push(`"${colName}" = $${idx}`)
         values.push(value)

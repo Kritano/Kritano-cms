@@ -15,6 +15,7 @@ interface SeoData {
   robotsIndex: string | null
   robotsFollow: string | null
   focusKeyword: string | null
+  secondaryKeywords: string | null
   structuredDataType: string | null
   noIndex?: boolean
 }
@@ -38,6 +39,7 @@ const defaults: SeoData = {
   robotsIndex: 'index',
   robotsFollow: 'follow',
   focusKeyword: null,
+  secondaryKeywords: null,
   structuredDataType: null,
 }
 
@@ -71,6 +73,11 @@ export function SeoBlockField({ label, value, onChange }: Props) {
       </div>
 
       <Input label="Focus keyword" value={seo.focusKeyword || ''} onChange={(e) => update('focusKeyword', e.target.value || null)} placeholder="Primary keyword for this page" />
+
+      <div className="space-y-1.5">
+        <Input label="Secondary keywords" value={seo.secondaryKeywords || ''} onChange={(e) => update('secondaryKeywords', e.target.value || null)} placeholder="keyword one, keyword two, keyword three..." />
+        <p className="text-xs text-gray-400">Comma-separated. Added to meta keywords tag alongside focus keyword.</p>
+      </div>
 
       <Input label="Canonical URL" value={seo.canonicalUrl || ''} onChange={(e) => update('canonicalUrl', e.target.value || null)} placeholder="Leave blank to use page URL" />
 
