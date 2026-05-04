@@ -33,6 +33,20 @@ if (adminBuilt) {
   // Redirect /admin to /admin/
   app.get('/admin', (c) => c.redirect('/admin/'))
 
+  // MIME type map for static assets
+  const mimeTypes: Record<string, string> = {
+    '.js': 'application/javascript',
+    '.css': 'text/css',
+    '.html': 'text/html',
+    '.json': 'application/json',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+  }
+
   // Serve built admin assets, with SPA fallback to index.html
   app.get('/admin/*', async (c) => {
     const reqPath = c.req.path.replace(/^\/admin/, '')
@@ -40,7 +54,11 @@ if (adminBuilt) {
     const file = Bun.file(filePath)
 
     if (await file.exists()) {
-      return new Response(file)
+      const ext = filePath.substring(filePath.lastIndexOf('.'))
+      const contentType = mimeTypes[ext]
+      return new Response(file, contentType ? {
+        headers: { 'Content-Type': contentType },
+      } : undefined)
     }
 
     // SPA fallback — serve index.html for any unmatched route
