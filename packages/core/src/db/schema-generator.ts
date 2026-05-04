@@ -55,6 +55,22 @@ const SYSTEM_COLUMNS: ColumnDefinition[] = [
     unique: false,
     references: null,
   },
+  {
+    name: 'created_by',
+    sqlType: 'uuid',
+    nullable: true,
+    defaultValue: null,
+    unique: false,
+    references: { table: 'users', column: 'id' },
+  },
+  {
+    name: 'updated_by',
+    sqlType: 'uuid',
+    nullable: true,
+    defaultValue: null,
+    unique: false,
+    references: { table: 'users', column: 'id' },
+  },
 ]
 
 export function fieldToColumnName(fieldName: string): string {
@@ -169,7 +185,7 @@ export function collectionToTable(collection: CollectionDefinition): TableDefini
   const tableName = collectionToTableName(collection.name)
   const columns = [...SYSTEM_COLUMNS]
 
-  const systemFieldNames = new Set(['status', 'publishedAt', 'createdAt', 'updatedAt'])
+  const systemFieldNames = new Set(['status', 'publishedAt', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'])
 
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     // Skip fields that collide with system columns

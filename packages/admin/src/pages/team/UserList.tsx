@@ -36,7 +36,7 @@ export function UserList() {
         <Link to="/admin/users/invite">
           <Button size="sm">
             <UserPlus size={16} className="mr-2" />
-            Invite user
+            Create user
           </Button>
         </Link>
       </div>

@@ -185,8 +185,10 @@ export function DocumentEditor({ collection, id }: Props) {
           </div>
         </div>
 
-        {/* Schema-driven fields */}
-        {Object.entries(schema.fields).map(([name, field]) => {
+        {/* Wait for document to load before rendering fields (prevents TipTap initialising empty) */}
+        {id && !docData?.data ? (
+          <div className="py-8 text-center text-sm text-gray-400">Loading...</div>
+        ) : Object.entries(schema.fields).map(([name, field]) => {
           const f = field as FieldDefinition
           // Skip status (handled in sidebar), seoBlock (handled in sidebar)
           if (name === 'status') return null
@@ -231,7 +233,8 @@ export function DocumentEditor({ collection, id }: Props) {
               allValues={fields}
             />
           )
-        })}
+        })
+        }
       </div>
 
       {/* Right sidebar */}

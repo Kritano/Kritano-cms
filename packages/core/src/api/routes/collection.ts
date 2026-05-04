@@ -89,9 +89,14 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     )
     const total = parseInt((countResult[0] as Record<string, unknown>).total as string, 10)
 
-    // Fetch rows
+    // Fetch rows with author info
     const rows = await sql.unsafe(
-      `SELECT * FROM "${tableName}" ${whereClause} ${orderClause} LIMIT ${limit} OFFSET ${offset}`,
+      `SELECT t.*, u.name as author_name, u.email as author_email
+       FROM "${tableName}" t
+       LEFT JOIN users u ON u.id = t.created_by
+       ${whereClause ? whereClause.replace(/\b(status|title)\b/g, 't.$1') : ''}
+       ORDER BY t."${sortCol}" ${order}
+       LIMIT ${limit} OFFSET ${offset}`,
       params,
     )
 
@@ -111,7 +116,10 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     const user = c.get('user')
 
     const rows = await sql.unsafe(
-      `SELECT * FROM "${tableName}" WHERE id = $1 LIMIT 1`,
+      `SELECT t.*, u.name as author_name, u.email as author_email
+       FROM "${tableName}" t
+       LEFT JOIN users u ON u.id = t.created_by
+       WHERE t.id = $1 LIMIT 1`,
       [id],
     )
 
@@ -134,7 +142,10 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     const user = c.get('user')
 
     const rows = await sql.unsafe(
-      `SELECT * FROM "${tableName}" WHERE slug = $1 LIMIT 1`,
+      `SELECT t.*, u.name as author_name, u.email as author_email
+       FROM "${tableName}" t
+       LEFT JOIN users u ON u.id = t.created_by
+       WHERE t.slug = $1 LIMIT 1`,
       [slug],
     )
 
@@ -154,6 +165,7 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
   app.post(`/${collection.name}`, requireAuth, requireScope('content:write'), async (c) => {
     const sql = getClient()
     const body = await c.req.json()
+    const user = c.get('user')
 
     const columns: string[] = []
     const placeholders: string[] = []
@@ -170,6 +182,18 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
         values.push(serializeValue(body[fieldName], field as FieldDefinition, sql))
         idx++
       }
+    }
+
+    // Add created_by and updated_by from authenticated user
+    if (user?.sub) {
+      columns.push('"created_by"')
+      placeholders.push(`$${idx}`)
+      values.push(user.sub)
+      idx++
+      columns.push('"updated_by"')
+      placeholders.push(`$${idx}`)
+      values.push(user.sub)
+      idx++
     }
 
     const colList = columns.length > 0 ? `, ${columns.join(', ')}` : ''
@@ -214,6 +238,11 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     }
 
     setClauses.push(`"updated_at" = now()`)
+    if (user?.sub) {
+      setClauses.push(`"updated_by" = $${idx}`)
+      values.push(user.sub)
+      idx++
+    }
     values.push(id)
 
     const rows = await sql.unsafe(
@@ -328,8 +357,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     await createRevision(id, collection.name, tableName, user?.sub ?? null)
 
     const rows = await sql.unsafe(
-      `UPDATE "${tableName}" SET status = 'published', published_at = now(), updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
+      `UPDATE "${tableName}" SET status = 'published', published_at = now(), updated_at = now(), updated_by = $2 WHERE id = $1 RETURNING *`,
+      [id, user?.sub ?? null],
     )
 
     if (rows.length === 0) {
@@ -352,8 +381,8 @@ export function createCollectionRoutes(collection: CollectionDefinition): Hono<A
     await createRevision(id, collection.name, tableName, user?.sub ?? null)
 
     const rows = await sql.unsafe(
-      `UPDATE "${tableName}" SET status = 'draft', published_at = NULL, updated_at = now() WHERE id = $1 RETURNING *`,
-      [id],
+      `UPDATE "${tableName}" SET status = 'draft', published_at = NULL, updated_at = now(), updated_by = $2 WHERE id = $1 RETURNING *`,
+      [id, user?.sub ?? null],
     )
 
     if (rows.length === 0) {
