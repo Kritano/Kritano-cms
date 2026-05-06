@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { X } from 'lucide-react'
 import { PublishPanel } from './PublishPanel'
 import { SeoPanel } from './SeoPanel'
 import { HistoryPanel } from './HistoryPanel'
@@ -16,10 +17,10 @@ interface Props {
   seoValue: any
   onSeoChange: (value: any) => void
   previewUrl?: string | null
-  // Revision history props
   collection?: string
   documentId?: string | null
   onRestore?: () => void
+  onClose?: () => void
 }
 
 type Tab = 'publish' | 'seo' | 'history'
@@ -33,7 +34,20 @@ export function EditorSidebar(props: Props) {
   ]
 
   return (
-    <div className="w-80 shrink-0 border-l border-gray-200 bg-white">
+    <div className="h-full w-80 shrink-0 overflow-y-auto border-l border-gray-200 bg-white">
+      {/* Mobile close button */}
+      {props.onClose && (
+        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2.5 lg:hidden">
+          <span className="text-sm font-medium text-gray-900">Details</span>
+          <button
+            onClick={props.onClose}
+            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
       {/* Tab switcher */}
       <div className="flex border-b border-gray-200">
         {tabs.map((t) => (

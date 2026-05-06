@@ -67,9 +67,9 @@ export function BlockPicker({ blocks, onSelect, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl"
+        className="w-full max-h-[85vh] overflow-hidden rounded-t-xl bg-white shadow-2xl sm:max-w-lg sm:rounded-xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
@@ -107,7 +107,7 @@ export function BlockPicker({ blocks, onSelect, onClose }: Props) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {filtered.map((block, i) => {
               const fieldNames = getFieldNames(block)
               const description = (block as any).description || null
@@ -147,8 +147,8 @@ export function BlockPicker({ blocks, onSelect, onClose }: Props) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-gray-100 px-5 py-2">
+        {/* Footer - keyboard shortcuts (hidden on touch devices) */}
+        <div className="hidden border-t border-gray-100 px-5 py-2 sm:block">
           <div className="flex gap-3 text-[10px] text-gray-400">
             <span><kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-0.5 font-mono">↑↓←→</kbd> navigate</span>
             <span><kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-0.5 font-mono">↵</kbd> insert</span>

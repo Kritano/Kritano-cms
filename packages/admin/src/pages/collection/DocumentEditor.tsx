@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save } from 'lucide-react'
+import { Save, PanelRight } from 'lucide-react'
 import type { FieldDefinition, Block } from '@kritano/cms/types'
 import { api } from '@/lib/api'
 import { FieldRenderer } from '@/components/fields/FieldRenderer'
@@ -158,21 +158,22 @@ export function DocumentEditor({ collection, id }: Props) {
   const status = (fields.status as string) || (docData?.data?.status) || 'draft'
   const slugValue = fields.slug as string | undefined
   const previewUrl = slugValue ? `${window.location.origin}/${collection}/${slugValue}` : null
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-full gap-0">
       {/* Main content area */}
-      <div className="flex-1 space-y-5 overflow-y-auto pr-4">
+      <div className="flex-1 space-y-5 overflow-y-auto pr-0 lg:pr-4">
         {/* Save indicator */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">
             {docId ? 'Edit' : 'New'} {collection}
           </h2>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs text-gray-400 sm:inline">
               {saveState === 'saved' && '✓ Saved'}
               {saveState === 'saving' && 'Saving…'}
-              {saveState === 'unsaved' && '● Unsaved changes'}
+              {saveState === 'unsaved' && '● Unsaved'}
             </span>
             <button
               onClick={save}
@@ -180,7 +181,14 @@ export function DocumentEditor({ collection, id }: Props) {
               className="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
             >
               <Save size={14} />
-              Save
+              <span className="hidden sm:inline">Save</span>
+            </button>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-50 lg:hidden"
+              aria-label="Toggle sidebar"
+            >
+              <PanelRight size={16} />
             </button>
           </div>
         </div>
@@ -237,25 +245,39 @@ export function DocumentEditor({ collection, id }: Props) {
         }
       </div>
 
-      {/* Right sidebar */}
-      <EditorSidebar
-        status={status}
-        createdAt={docData?.data?.created_at || null}
-        updatedAt={docData?.data?.updated_at || null}
-        publishedAt={docData?.data?.published_at || null}
-        onPublish={() => publishMutation.mutate('publish')}
-        onUnpublish={() => publishMutation.mutate('unpublish')}
-        publishLoading={publishMutation.isPending}
-        hasSeo={hasSeo}
-        seoValue={fields.seo}
-        onSeoChange={(val) => updateField('seo', val)}
-        previewUrl={previewUrl}
-        collection={collection}
-        documentId={docId || null}
-        onRestore={() => {
-          queryClient.invalidateQueries({ queryKey: ['document', collection, docId] })
-        }}
-      />
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Right sidebar - hidden on mobile unless toggled */}
+      <div className={`
+        fixed right-0 top-0 z-50 h-full w-80 transform transition-transform lg:static lg:z-auto lg:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}>
+        <EditorSidebar
+          status={status}
+          createdAt={docData?.data?.created_at || null}
+          updatedAt={docData?.data?.updated_at || null}
+          publishedAt={docData?.data?.published_at || null}
+          onPublish={() => publishMutation.mutate('publish')}
+          onUnpublish={() => publishMutation.mutate('unpublish')}
+          publishLoading={publishMutation.isPending}
+          hasSeo={hasSeo}
+          seoValue={fields.seo}
+          onSeoChange={(val) => updateField('seo', val)}
+          previewUrl={previewUrl}
+          collection={collection}
+          documentId={docId || null}
+          onRestore={() => {
+            queryClient.invalidateQueries({ queryKey: ['document', collection, docId] })
+          }}
+          onClose={() => setSidebarOpen(false)}
+        />
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -31,7 +32,10 @@ export function BlockBuilder({ blockDefs: rawBlockDefs, value: rawValue, onChang
   const [pickerOpen, setPickerOpen] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  )
 
   function addBlock(blockName: string) {
     const id = crypto.randomUUID()
@@ -138,21 +142,21 @@ function SortableBlock({ block, blockDef, expanded, onToggle, onDuplicate, onDel
 
   return (
     <div ref={setNodeRef} style={style} className="rounded-md border border-gray-200 bg-white">
-      <div className="flex items-center gap-2 px-3 py-2">
-        <button {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500">
+      <div className="flex items-center gap-1 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2">
+        <button {...attributes} {...listeners} className="cursor-grab p-1.5 text-gray-300 hover:text-gray-500 touch-manipulation">
           <GripVertical size={16} />
         </button>
-        <button type="button" onClick={onToggle} className="flex flex-1 items-center gap-2 text-left">
+        <button type="button" onClick={onToggle} className="flex min-h-[36px] flex-1 items-center gap-2 text-left">
           {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           <span className="text-xs font-semibold uppercase text-gray-500">{block.type}</span>
           {!expanded && firstTextField && (
-            <span className="truncate text-sm text-gray-400">{String(firstTextField).slice(0, 50)}</span>
+            <span className="hidden truncate text-sm text-gray-400 sm:inline">{String(firstTextField).slice(0, 50)}</span>
           )}
         </button>
-        <button type="button" onClick={onDuplicate} className="text-gray-300 hover:text-gray-500">
+        <button type="button" onClick={onDuplicate} className="p-2 text-gray-300 hover:text-gray-500 touch-manipulation">
           <Copy size={14} />
         </button>
-        <button type="button" onClick={onDelete} className="text-gray-300 hover:text-red-500">
+        <button type="button" onClick={onDelete} className="p-2 text-gray-300 hover:text-red-500 touch-manipulation">
           <Trash2 size={14} />
         </button>
       </div>

@@ -55,7 +55,7 @@ export function VisualEditor({ content, onChange }: Props) {
   return (
     <div className="rounded-md border border-gray-200 bg-white">
       {/* Formatting toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-200 px-2 py-1.5">
+      <div className="flex items-center gap-0.5 overflow-x-auto border-b border-gray-200 px-2 py-1.5 [-webkit-overflow-scrolling:touch]">
         <ToolbarBtn active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>B</ToolbarBtn>
         <ToolbarBtn active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>I</ToolbarBtn>
         <span className="mx-1 h-4 w-px bg-gray-200" />
@@ -81,7 +81,7 @@ function ToolbarBtn({ active, onClick, children }: { active: boolean; onClick: (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+      className={`shrink-0 rounded px-2.5 py-1.5 text-xs font-medium transition-colors min-h-[36px] min-w-[36px] ${
         active ? 'bg-gray-200 text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
       }`}
     >
