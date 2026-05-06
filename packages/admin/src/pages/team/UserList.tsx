@@ -46,63 +46,101 @@ export function UserList() {
       ) : users.length === 0 ? (
         <p className="text-sm text-gray-500">No users found.</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Roles</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">2FA</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Joined</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    <Link to="/admin/users/$id" params={{ id: user.id }} className="hover:underline">
-                      {user.name || '—'}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.map((role) => (
-                        <Badge key={role.id} variant={role.name === 'super_admin' ? 'warning' : 'default'}>
-                          {role.name}
-                        </Badge>
-                      ))}
-                      {user.roles.length === 0 && <span className="text-xs text-gray-400">No roles</span>}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {user.two_factor_enabled ? (
-                      <Badge variant="success">Enabled</Badge>
-                    ) : (
-                      <span className="text-gray-400">Off</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{formatDate(user.created_at)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => {
-                        if (confirm('Deactivate this user? This cannot be undone.')) {
-                          deleteMutation.mutate(user.id)
-                        }
-                      }}
-                      className="text-gray-400 hover:text-red-600"
-                      title="Deactivate user"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 sm:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Roles</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">2FA</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Joined</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      <Link to="/admin/users/$id" params={{ id: user.id }} className="hover:underline">
+                        {user.name || '—'}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map((role) => (
+                          <Badge key={role.id} variant={role.name === 'super_admin' ? 'warning' : 'default'}>
+                            {role.name}
+                          </Badge>
+                        ))}
+                        {user.roles.length === 0 && <span className="text-xs text-gray-400">No roles</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {user.two_factor_enabled ? (
+                        <Badge variant="success">Enabled</Badge>
+                      ) : (
+                        <span className="text-gray-400">Off</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{formatDate(user.created_at)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          if (confirm('Deactivate this user? This cannot be undone.')) {
+                            deleteMutation.mutate(user.id)
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                        title="Deactivate user"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="space-y-2 sm:hidden">
+            {users.map((user) => (
+              <div key={user.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <Link to="/admin/users/$id" params={{ id: user.id }} className="flex-1 min-w-0">
+                    <p className="truncate font-medium text-gray-900">{user.name || '—'}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500">{user.email}</p>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (confirm('Deactivate this user? This cannot be undone.')) {
+                        deleteMutation.mutate(user.id)
+                      }
+                    }}
+                    className="shrink-0 p-1 text-gray-400 hover:text-red-600"
+                    title="Deactivate user"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {user.roles.map((role) => (
+                    <Badge key={role.id} variant={role.name === 'super_admin' ? 'warning' : 'default'}>
+                      {role.name}
+                    </Badge>
+                  ))}
+                  {user.roles.length === 0 && <span className="text-xs text-gray-400">No roles</span>}
+                  {user.two_factor_enabled && <Badge variant="success">2FA</Badge>}
+                </div>
+                <p className="mt-1.5 text-xs text-gray-400">Joined {formatDate(user.created_at)}</p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

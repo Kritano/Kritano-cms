@@ -115,16 +115,18 @@ export function Redirects() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Redirects</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => setShowImport(!showImport)}>
             <Upload size={14} className="mr-1.5" />
-            Import CSV
+            <span className="hidden sm:inline">Import CSV</span>
+            <span className="sm:hidden">Import</span>
           </Button>
           <Button variant="secondary" size="sm" onClick={handleExport}>
             <Download size={14} className="mr-1.5" />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
           </Button>
           <Button size="sm" onClick={() => setShowAdd(!showAdd)}>
             <Plus size={14} className="mr-1.5" />
@@ -215,99 +217,169 @@ export function Redirects() {
       {isLoading ? (
         <p className="text-sm text-gray-500">Loading…</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">From</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">To</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Hits</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Created</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {/* Inline add row */}
-              {showAdd && (
-                <tr className="bg-blue-50/50">
-                  <td className="px-4 py-2">
-                    <input value={newFrom} onChange={(e) => setNewFrom(e.target.value)} placeholder="/old-url" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
-                  </td>
-                  <td className="px-4 py-2">
-                    <input value={newTo} onChange={(e) => setNewTo(e.target.value)} placeholder="/new-url" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
-                  </td>
-                  <td className="px-4 py-2">
-                    <select value={newType} onChange={(e) => setNewType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1 text-sm">
-                      <option value={301}>301</option>
-                      <option value={302}>302</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-2" />
-                  <td className="px-4 py-2" />
-                  <td className="px-4 py-2 text-right">
-                    <Button size="sm" onClick={() => createMutation.mutate()} disabled={!newFrom || !newTo || createMutation.isPending}>
-                      Add
-                    </Button>
-                  </td>
-                </tr>
-              )}
+        <>
+          {/* Mobile add form */}
+          {showAdd && (
+            <div className="rounded-lg border border-gray-200 bg-blue-50/50 p-3 space-y-2 sm:hidden">
+              <input value={newFrom} onChange={(e) => setNewFrom(e.target.value)} placeholder="/old-url" className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm" />
+              <input value={newTo} onChange={(e) => setNewTo(e.target.value)} placeholder="/new-url" className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm" />
+              <div className="flex items-center gap-2">
+                <select value={newType} onChange={(e) => setNewType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1.5 text-sm">
+                  <option value={301}>301</option>
+                  <option value={302}>302</option>
+                </select>
+                <Button size="sm" onClick={() => createMutation.mutate()} disabled={!newFrom || !newTo || createMutation.isPending}>
+                  Add
+                </Button>
+              </div>
+            </div>
+          )}
 
-              {redirects.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50">
-                  {editId === r.id ? (
-                    <>
-                      <td className="px-4 py-2">
-                        <input value={editFrom} onChange={(e) => setEditFrom(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
-                      </td>
-                      <td className="px-4 py-2">
-                        <input value={editTo} onChange={(e) => setEditTo(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
-                      </td>
-                      <td className="px-4 py-2">
-                        <select value={editType} onChange={(e) => setEditType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1 text-sm">
-                          <option value={301}>301</option>
-                          <option value={302}>302</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-2 text-gray-500">{r.hits}</td>
-                      <td className="px-4 py-2 text-gray-500">{formatDate(r.created_at)}</td>
-                      <td className="px-4 py-2 text-right space-x-1">
-                        <Button size="sm" onClick={() => updateMutation.mutate(r.id)}>Save</Button>
-                        <Button variant="ghost" size="sm" onClick={() => setEditId(null)}>Cancel</Button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="px-4 py-3 font-mono text-gray-900 cursor-pointer" onClick={() => startEdit(r)}>{r.from_path}</td>
-                      <td className="px-4 py-3 font-mono text-gray-600 cursor-pointer" onClick={() => startEdit(r)}>{r.to_path}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={r.type === 301 ? 'default' : 'warning'}>{r.type}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">{r.hits}</td>
-                      <td className="px-4 py-3 text-gray-500">{formatDate(r.created_at)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => {
-                            if (confirm('Delete this redirect?')) deleteMutation.mutate(r.id)
-                          }}
-                          className="text-gray-400 hover:text-red-600"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-
-              {redirects.length === 0 && !showAdd && (
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white sm:block">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">No redirects found.</td>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">From</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">To</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Hits</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Created</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {/* Inline add row */}
+                {showAdd && (
+                  <tr className="bg-blue-50/50">
+                    <td className="px-4 py-2">
+                      <input value={newFrom} onChange={(e) => setNewFrom(e.target.value)} placeholder="/old-url" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
+                    </td>
+                    <td className="px-4 py-2">
+                      <input value={newTo} onChange={(e) => setNewTo(e.target.value)} placeholder="/new-url" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
+                    </td>
+                    <td className="px-4 py-2">
+                      <select value={newType} onChange={(e) => setNewType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1 text-sm">
+                        <option value={301}>301</option>
+                        <option value={302}>302</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-2" />
+                    <td className="px-4 py-2" />
+                    <td className="px-4 py-2 text-right">
+                      <Button size="sm" onClick={() => createMutation.mutate()} disabled={!newFrom || !newTo || createMutation.isPending}>
+                        Add
+                      </Button>
+                    </td>
+                  </tr>
+                )}
+
+                {redirects.map((r) => (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    {editId === r.id ? (
+                      <>
+                        <td className="px-4 py-2">
+                          <input value={editFrom} onChange={(e) => setEditFrom(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input value={editTo} onChange={(e) => setEditTo(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
+                        </td>
+                        <td className="px-4 py-2">
+                          <select value={editType} onChange={(e) => setEditType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1 text-sm">
+                            <option value={301}>301</option>
+                            <option value={302}>302</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-2 text-gray-500">{r.hits}</td>
+                        <td className="px-4 py-2 text-gray-500">{formatDate(r.created_at)}</td>
+                        <td className="px-4 py-2 text-right space-x-1">
+                          <Button size="sm" onClick={() => updateMutation.mutate(r.id)}>Save</Button>
+                          <Button variant="ghost" size="sm" onClick={() => setEditId(null)}>Cancel</Button>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-4 py-3 font-mono text-gray-900 cursor-pointer" onClick={() => startEdit(r)}>{r.from_path}</td>
+                        <td className="px-4 py-3 font-mono text-gray-600 cursor-pointer" onClick={() => startEdit(r)}>{r.to_path}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={r.type === 301 ? 'default' : 'warning'}>{r.type}</Badge>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">{r.hits}</td>
+                        <td className="px-4 py-3 text-gray-500">{formatDate(r.created_at)}</td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this redirect?')) deleteMutation.mutate(r.id)
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+
+                {redirects.length === 0 && !showAdd && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">No redirects found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="space-y-2 sm:hidden">
+            {redirects.map((r) => (
+              <div key={r.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                {editId === r.id ? (
+                  <div className="space-y-2">
+                    <input value={editFrom} onChange={(e) => setEditFrom(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm" />
+                    <input value={editTo} onChange={(e) => setEditTo(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm" />
+                    <div className="flex items-center gap-2">
+                      <select value={editType} onChange={(e) => setEditType(Number(e.target.value))} className="rounded border border-gray-300 px-2 py-1.5 text-sm">
+                        <option value={301}>301</option>
+                        <option value={302}>302</option>
+                      </select>
+                      <Button size="sm" onClick={() => updateMutation.mutate(r.id)}>Save</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditId(null)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div onClick={() => startEdit(r)} className="cursor-pointer">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate text-sm font-mono text-gray-900">{r.from_path}</p>
+                        <p className="truncate text-sm font-mono text-gray-500">{r.to_path}</p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (confirm('Delete this redirect?')) deleteMutation.mutate(r.id)
+                        }}
+                        className="shrink-0 p-1 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-3 text-xs text-gray-400">
+                      <Badge variant={r.type === 301 ? 'default' : 'warning'}>{r.type}</Badge>
+                      <span>{r.hits} hits</span>
+                      <span>{formatDate(r.created_at)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {redirects.length === 0 && !showAdd && (
+              <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center">
+                <p className="text-sm text-gray-400">No redirects found.</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   )

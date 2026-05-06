@@ -34,7 +34,7 @@ export function EditorSidebar(props: Props) {
   ]
 
   return (
-    <div className="h-full w-80 shrink-0 overflow-y-auto border-l border-gray-200 bg-white">
+    <div className="h-full w-full shrink-0 overflow-y-auto border-l border-gray-200 bg-white sm:w-80">
       {/* Mobile close button */}
       {props.onClose && (
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2.5 lg:hidden">

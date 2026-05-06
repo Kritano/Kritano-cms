@@ -5,7 +5,7 @@ import { MediaGrid } from '@/components/media/MediaGrid'
 import { MediaUploader } from '@/components/media/MediaUploader'
 import { MediaDetail } from '@/components/media/MediaDetail'
 import { Button } from '@/components/ui/Button'
-import { FolderPlus, Folder, FolderOpen, Trash2, Image } from 'lucide-react'
+import { FolderPlus, Folder, FolderOpen, Trash2, Image, ChevronDown } from 'lucide-react'
 
 interface MediaFolder {
   id: string
@@ -72,10 +72,59 @@ export function Media() {
     }
   }
 
+  const activeFolderName = activeFolderId
+    ? folders.find((f) => f.id === activeFolderId)?.name || 'Folder'
+    : 'All media'
+  const [foldersExpanded, setFoldersExpanded] = useState(false)
+
   return (
-    <div className="flex gap-6">
-      {/* Folder sidebar */}
-      <div className="w-48 shrink-0 space-y-1">
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
+      {/* Mobile folder selector */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setFoldersExpanded(!foldersExpanded)}
+          className="flex w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm"
+        >
+          <span className="flex items-center gap-2">
+            <Folder size={14} className="text-gray-400" />
+            <span className="font-medium text-gray-900">{activeFolderName}</span>
+          </span>
+          <ChevronDown size={14} className={`text-gray-400 transition-transform ${foldersExpanded ? 'rotate-180' : ''}`} />
+        </button>
+        {foldersExpanded && (
+          <div className="mt-1 space-y-0.5 rounded-md border border-gray-200 bg-white p-2">
+            <button
+              onClick={() => { setActiveFolderId(null); setFoldersExpanded(false) }}
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm ${
+                activeFolderId === null ? 'bg-gray-100 font-medium text-gray-900' : 'text-gray-600'
+              }`}
+            >
+              <Image size={14} /> All media
+            </button>
+            {folders.map((folder) => (
+              <button
+                key={folder.id}
+                onClick={() => { setActiveFolderId(folder.id); setFoldersExpanded(false) }}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm ${
+                  activeFolderId === folder.id ? 'bg-gray-100 font-medium text-gray-900' : 'text-gray-600'
+                }`}
+              >
+                <Folder size={14} /> {folder.name}
+                <span className="ml-auto text-xs text-gray-400">{folder.file_count}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setShowNewFolder(true)}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-gray-500"
+            >
+              <FolderPlus size={14} /> New folder
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop folder sidebar */}
+      <div className="hidden w-48 shrink-0 space-y-1 lg:block">
         <p className="mb-2 text-xs font-semibold uppercase text-gray-500">Folders</p>
 
         <button

@@ -54,58 +54,99 @@ export function FormList() {
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Slug</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Fields</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Submissions</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Last Submission</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {forms.map((form) => (
-                <tr key={form.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    <Link to="/admin/forms/$id" params={{ id: form.id }} className="hover:underline">
-                      {form.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500 font-mono">{form.slug}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{(form.fields as unknown[]).length}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    <Link
-                      to="/admin/forms/$id/submissions"
-                      params={{ id: form.id }}
-                      className="inline-flex items-center gap-1 hover:underline"
-                    >
-                      <Inbox size={14} />
-                      {form.submission_count}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {form.last_submission_at ? formatDate(form.last_submission_at) : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete form "${form.name}"? All submissions will be lost.`)) {
-                          deleteMutation.mutate(form.id)
-                        }
-                      }}
-                      className="text-gray-400 hover:text-red-600"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 sm:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Slug</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Fields</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Submissions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Last Submission</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {forms.map((form) => (
+                  <tr key={form.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      <Link to="/admin/forms/$id" params={{ id: form.id }} className="hover:underline">
+                        {form.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 font-mono">{form.slug}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{(form.fields as unknown[]).length}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      <Link
+                        to="/admin/forms/$id/submissions"
+                        params={{ id: form.id }}
+                        className="inline-flex items-center gap-1 hover:underline"
+                      >
+                        <Inbox size={14} />
+                        {form.submission_count}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {form.last_submission_at ? formatDate(form.last_submission_at) : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete form "${form.name}"? All submissions will be lost.`)) {
+                            deleteMutation.mutate(form.id)
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="space-y-2 sm:hidden">
+            {forms.map((form) => (
+              <div key={form.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <Link to="/admin/forms/$id" params={{ id: form.id }} className="flex-1 min-w-0">
+                    <p className="truncate font-medium text-gray-900">{form.name}</p>
+                    <p className="mt-0.5 text-xs text-gray-500 font-mono">{form.slug}</p>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete form "${form.name}"? All submissions will be lost.`)) {
+                        deleteMutation.mutate(form.id)
+                      }
+                    }}
+                    className="shrink-0 p-1 text-gray-400 hover:text-red-600"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                  <span>{(form.fields as unknown[]).length} fields</span>
+                  <Link
+                    to="/admin/forms/$id/submissions"
+                    params={{ id: form.id }}
+                    className="inline-flex items-center gap-1 hover:underline"
+                  >
+                    <Inbox size={12} />
+                    {form.submission_count}
+                  </Link>
+                  {form.last_submission_at && (
+                    <span>{formatDate(form.last_submission_at)}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

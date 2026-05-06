@@ -255,7 +255,7 @@ export function DocumentEditor({ collection, id }: Props) {
 
       {/* Right sidebar - hidden on mobile unless toggled */}
       <div className={`
-        fixed right-0 top-0 z-50 h-full w-80 transform transition-transform lg:static lg:z-auto lg:translate-x-0
+        fixed inset-y-0 right-0 z-50 w-full transform transition-transform sm:w-80 lg:static lg:z-auto lg:w-80 lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
         <EditorSidebar

@@ -116,20 +116,20 @@ export function CollectionList({ collection }: Props) {
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5">
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 sm:px-4 sm:py-2.5">
           <span className="text-sm font-medium text-gray-700">{selected.size} selected</span>
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex flex-wrap gap-1.5 sm:gap-2">
             <Button variant="secondary" size="sm" onClick={handleBulkPublish} disabled={bulkLoading}>
               <ArrowUpCircle size={14} className="mr-1" />
-              Publish
+              <span className="hidden sm:inline">Publish</span>
             </Button>
             <Button variant="secondary" size="sm" onClick={handleBulkUnpublish} disabled={bulkLoading}>
               <ArrowDownCircle size={14} className="mr-1" />
-              Unpublish
+              <span className="hidden sm:inline">Unpublish</span>
             </Button>
             <Button variant="danger" size="sm" onClick={handleBulkDelete} disabled={bulkLoading}>
               <Trash2 size={14} className="mr-1" />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
               Cancel
@@ -152,7 +152,9 @@ export function CollectionList({ collection }: Props) {
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <>
+        {/* Desktop table */}
+        <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white sm:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
@@ -210,6 +212,39 @@ export function CollectionList({ collection }: Props) {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile cards */}
+        <div className="space-y-2 sm:hidden">
+          {filtered.map((item: any) => (
+            <div key={item.id} className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
+              <input
+                type="checkbox"
+                checked={selected.has(item.id)}
+                onChange={() => toggleItem(item.id)}
+                className="mt-1 rounded border-gray-300"
+              />
+              <Link
+                to="/admin/$collection/$id"
+                params={{ collection, id: item.id }}
+                className="flex-1 min-w-0"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-medium text-gray-900">{item.title || 'Untitled'}</span>
+                  <Badge
+                    variant={
+                      item.status === 'published' ? 'success' :
+                      item.status === 'scheduled' ? 'warning' : 'default'
+                    }
+                  >
+                    {item.status}
+                  </Badge>
+                </div>
+                <p className="mt-0.5 text-xs text-gray-500">{formatDate(item.updated_at)}</p>
+              </Link>
+            </div>
+          ))}
+        </div>
+        </>
       )}
     </div>
   )

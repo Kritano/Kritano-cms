@@ -72,7 +72,7 @@ export function FormSubmissions({ formId }: { formId: string }) {
         </Button>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* Table */}
         <div className="flex-1 min-w-0">
           {isLoading ? (
@@ -83,7 +83,7 @@ export function FormSubmissions({ formId }: { formId: string }) {
             </div>
           ) : (
             <>
-              <div className="overflow-hidden rounded-lg border border-gray-200">
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -111,7 +111,7 @@ export function FormSubmissions({ formId }: { formId: string }) {
                               e.stopPropagation()
                               if (confirm('Delete this submission?')) deleteMutation.mutate(sub.id)
                             }}
-                            className="text-gray-400 hover:text-red-600"
+                            className="p-2 text-gray-400 hover:text-red-600"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -137,9 +137,9 @@ export function FormSubmissions({ formId }: { formId: string }) {
           )}
         </div>
 
-        {/* Detail slide-out */}
+        {/* Detail panel - full width on mobile, sidebar on desktop */}
         {selectedSub && (
-          <div className="w-80 shrink-0 rounded-lg border border-gray-200 bg-white p-4">
+          <div className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-4 lg:w-80">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">Submission Detail</h3>
               <button onClick={() => setSelectedSub(null)} className="text-gray-400 hover:text-gray-600">

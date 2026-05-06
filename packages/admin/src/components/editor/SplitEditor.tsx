@@ -13,7 +13,7 @@ export function SplitEditor({ value, onChange }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Write markdown…"
-        className="min-h-[250px] resize-none border-0 px-4 py-3 font-mono text-sm leading-relaxed text-gray-900 placeholder:text-gray-400 focus:outline-none lg:min-h-[400px]"
+        className="min-h-[150px] resize-none border-0 px-4 py-3 font-mono text-sm leading-relaxed text-gray-900 placeholder:text-gray-400 focus:outline-none sm:min-h-[250px] lg:min-h-[400px]"
       />
       <div
         className="prose prose-sm max-w-none overflow-y-auto px-4 py-3"

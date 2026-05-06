@@ -45,13 +45,13 @@ export function Deployment() {
 
       <RebuildCard />
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 overflow-x-auto border-b border-gray-200">
         {tabs.map((t) => (
           <button
             key={t.value}
             onClick={() => setTab(t.value)}
             className={cn(
-              'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+              'whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 transition-colors sm:px-4',
               tab === t.value
                 ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-500 hover:text-gray-700',
@@ -394,7 +394,7 @@ git push`
         <div className="rounded-lg border border-gray-200 bg-white p-5">
           <p className="mb-3 text-xs font-medium uppercase text-gray-400">How to update</p>
           <p className="mb-3 text-sm text-gray-600">Run these commands in your project locally:</p>
-          <pre className="rounded-md bg-gray-900 p-4 text-sm text-gray-100 overflow-x-auto">{updateCommands}</pre>
+          <pre className="rounded-md bg-gray-900 p-3 text-xs text-gray-100 overflow-x-auto sm:p-4 sm:text-sm">{updateCommands}</pre>
           <div className="mt-3 flex items-center gap-3">
             <button
               onClick={copyCommands}
@@ -467,11 +467,11 @@ function BackupsTab() {
       )}
 
       {backups.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-gray-200">
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 whitespace-nowrap">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Size</th>
                 <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">Actions</th>
               </tr>

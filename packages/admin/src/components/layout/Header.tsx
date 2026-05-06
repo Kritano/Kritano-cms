@@ -20,7 +20,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="text-gray-500 hover:text-gray-700 lg:hidden"
+          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 lg:hidden"
         >
           <Menu size={20} />
         </button>
@@ -29,10 +29,10 @@ export function Header({ title, onMenuClick }: HeaderProps) {
 
       <button
         onClick={handleLogout}
-        className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="flex min-h-[44px] items-center gap-2 rounded-md px-3 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
       >
         <LogOut size={16} />
-        Logout
+        <span className="hidden sm:inline">Logout</span>
       </button>
     </header>
   )

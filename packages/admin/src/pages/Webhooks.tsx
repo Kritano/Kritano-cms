@@ -147,7 +147,7 @@ export function Webhooks() {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-6 lg:flex-row">
       {/* Main list */}
       <div className="flex-1 min-w-0 space-y-4">
         <div className="flex items-center justify-between">
@@ -217,7 +217,7 @@ export function Webhooks() {
                     onClick={() => {
                       if (confirm(`Delete webhook "${wh.name}"?`)) deleteMutation.mutate(wh.id)
                     }}
-                    className="text-gray-400 hover:text-red-600"
+                    className="p-2 text-gray-400 hover:text-red-600"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -230,12 +230,12 @@ export function Webhooks() {
 
       {/* Side panel */}
       {panel !== 'closed' && (
-        <div className="w-96 shrink-0 rounded-lg border border-gray-200 bg-white p-5">
+        <div className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-5 lg:w-96">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium text-gray-900">
               {panel === 'new' ? 'New Webhook' : panel === 'edit' ? 'Edit Webhook' : 'Delivery Log'}
             </h2>
-            <button onClick={closePanel} className="text-gray-400 hover:text-gray-600">
+            <button onClick={closePanel} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
               <X size={18} />
             </button>
           </div>

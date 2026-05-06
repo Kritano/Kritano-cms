@@ -113,7 +113,7 @@ export function ApiKeys() {
             </Button>
             <button
               onClick={() => setNewKeyRevealed(null)}
-              className="text-green-400 hover:text-green-600"
+              className="rounded-md p-1.5 text-green-400 hover:bg-green-100 hover:text-green-600"
             >
               <X size={16} />
             </button>
@@ -126,7 +126,7 @@ export function ApiKeys() {
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-900">Create API Key</h3>
-            <button onClick={() => { setShowCreate(false); setError('') }} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => { setShowCreate(false); setError('') }} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
               <X size={16} />
             </button>
           </div>
@@ -204,58 +204,97 @@ export function ApiKeys() {
       )}
 
       {keys.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Key</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Scopes</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Last used</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Expires</th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {keys.map((key) => (
-                <tr key={key.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{key.name}</td>
-                  <td className="px-4 py-3">
-                    <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white sm:block">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Key</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Scopes</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Last used</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Expires</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {keys.map((key) => (
+                  <tr key={key.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{key.name}</td>
+                    <td className="px-4 py-3">
+                      <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+                        {key.key_prefix}...
+                      </code>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {(Array.isArray(key.permissions) ? key.permissions : []).map((scope) => (
+                          <Badge key={scope}>{scope.replace(':', ' ')}</Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {key.last_used ? formatDate(String(key.last_used)) : 'Never'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {key.expires_at ? formatDate(String(key.expires_at)) : 'Never'}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Revoke "${key.name}"? This cannot be undone.`)) {
+                            deleteMutation.mutate(key.id)
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                        title="Revoke key"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="space-y-2 sm:hidden">
+            {keys.map((key) => (
+              <div key={key.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900">{key.name}</p>
+                    <code className="mt-0.5 inline-block rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
                       {key.key_prefix}...
                     </code>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {(Array.isArray(key.permissions) ? key.permissions : []).map((scope) => (
-                        <Badge key={scope}>{scope.replace(':', ' ')}</Badge>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {key.last_used ? formatDate(String(key.last_used)) : 'Never'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {key.expires_at ? formatDate(String(key.expires_at)) : 'Never'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => {
-                        if (confirm(`Revoke "${key.name}"? This cannot be undone.`)) {
-                          deleteMutation.mutate(key.id)
-                        }
-                      }}
-                      className="text-gray-400 hover:text-red-600"
-                      title="Revoke key"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Revoke "${key.name}"? This cannot be undone.`)) {
+                        deleteMutation.mutate(key.id)
+                      }
+                    }}
+                    className="shrink-0 p-1 text-gray-400 hover:text-red-600"
+                    title="Revoke key"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {(Array.isArray(key.permissions) ? key.permissions : []).map((scope) => (
+                    <Badge key={scope}>{scope.replace(':', ' ')}</Badge>
+                  ))}
+                </div>
+                <div className="mt-1.5 flex gap-3 text-xs text-gray-400">
+                  <span>Used: {key.last_used ? formatDate(String(key.last_used)) : 'Never'}</span>
+                  <span>Expires: {key.expires_at ? formatDate(String(key.expires_at)) : 'Never'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

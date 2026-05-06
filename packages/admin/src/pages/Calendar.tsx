@@ -143,7 +143,7 @@ export function Calendar() {
         <div className="grid grid-cols-7">
           {/* Padding for start of month */}
           {Array.from({ length: startPad }).map((_, i) => (
-            <div key={`pad-${i}`} className="min-h-[80px] border-b border-r border-gray-100 bg-gray-50/50" />
+            <div key={`pad-${i}`} className="min-h-[48px] border-b border-r border-gray-100 bg-gray-50/50 sm:min-h-[80px]" />
           ))}
 
           {days.map((day) => {
@@ -156,7 +156,7 @@ export function Calendar() {
               <div
                 key={key}
                 onClick={() => setSelectedDay(isSelected ? null : key)}
-                className={`min-h-[80px] cursor-pointer border-b border-r border-gray-100 p-1.5 transition-colors ${
+                className={`min-h-[48px] cursor-pointer border-b border-r border-gray-100 p-1 transition-colors sm:min-h-[80px] sm:p-1.5 ${
                   isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'
                 }`}
               >
@@ -164,10 +164,10 @@ export function Calendar() {
                   {day.getDate()}
                 </p>
                 <div className="mt-1 space-y-0.5">
-                  {items.slice(0, 3).map((item) => (
+                  {items.slice(0, 2).map((item) => (
                     <div
                       key={item.id}
-                      className={`flex items-center gap-1 rounded px-1 py-0.5 text-[10px] ${
+                      className={`hidden items-center gap-1 rounded px-1 py-0.5 text-[10px] sm:flex ${
                         item.status === 'scheduled' ? 'bg-amber-50 text-amber-700' : 'bg-gray-50 text-gray-600'
                       }`}
                     >
@@ -175,8 +175,16 @@ export function Calendar() {
                       <span className="truncate">{item.title}</span>
                     </div>
                   ))}
-                  {items.length > 3 && (
-                    <p className="text-[10px] text-gray-400 px-1">+{items.length - 3} more</p>
+                  {/* Mobile: just show dot indicators */}
+                  {items.length > 0 && (
+                    <div className="flex gap-0.5 sm:hidden">
+                      {items.slice(0, 4).map((item) => (
+                        <span key={item.id} className={`h-1.5 w-1.5 rounded-full ${COLLECTION_COLOURS[item.collection] || 'bg-gray-400'}`} />
+                      ))}
+                    </div>
+                  )}
+                  {items.length > 2 && (
+                    <p className="hidden text-[10px] text-gray-400 px-1 sm:block">+{items.length - 2} more</p>
                   )}
                 </div>
               </div>

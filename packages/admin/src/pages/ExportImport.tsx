@@ -272,6 +272,7 @@ function ImportTab() {
           {validation.preview?.collections && (
             <div>
               <h4 className="mb-2 text-xs font-medium uppercase text-gray-400">Collections</h4>
+              <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1">Collection</th><th>Total</th><th>New</th><th>Conflicts</th></tr></thead>
                 <tbody>
@@ -285,6 +286,7 @@ function ImportTab() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 

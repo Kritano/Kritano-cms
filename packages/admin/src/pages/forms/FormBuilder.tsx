@@ -144,7 +144,7 @@ export function FormBuilder({ id }: { id?: string }) {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input label="Form name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Contact Form" />
         <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="contact" />
       </div>
@@ -172,16 +172,16 @@ export function FormBuilder({ id }: { id?: string }) {
       </div>
 
       {activeTab === 'fields' && (
-        <div className="flex gap-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
           {/* Field palette */}
-          <div className="w-48 shrink-0">
+          <div className="shrink-0 lg:w-48">
             <p className="mb-2 text-xs font-semibold uppercase text-gray-500">Add field</p>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-4 lg:grid-cols-2">
               {FIELD_TYPES.map((ft) => (
                 <button
                   key={ft.type}
                   onClick={() => addField(ft.type)}
-                  className="rounded-md border border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                  className="rounded-md border border-gray-200 px-2 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 min-h-[36px]"
                 >
                   {ft.label}
                 </button>
@@ -204,7 +204,7 @@ export function FormBuilder({ id }: { id?: string }) {
                   onDragOver={(e) => handleDragOver(e, idx)}
                   onDragEnd={handleDragEnd}
                   onClick={() => setSelectedIndex(idx)}
-                  className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition-colors ${
+                  className={`flex items-center gap-2 rounded-md border px-3 py-3 cursor-pointer transition-colors touch-manipulation ${
                     selectedIndex === idx
                       ? 'border-gray-900 bg-gray-50'
                       : 'border-gray-200 hover:border-gray-300'
@@ -227,7 +227,7 @@ export function FormBuilder({ id }: { id?: string }) {
           </div>
 
           {/* Field settings panel */}
-          <div className="w-64 shrink-0">
+          <div className="shrink-0 lg:w-64">
             {selectedField ? (
               <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
                 <p className="text-xs font-semibold uppercase text-gray-500">Field Settings</p>
@@ -280,7 +280,7 @@ export function FormBuilder({ id }: { id?: string }) {
                             const opts = (selectedField.options || []).filter((_, j) => j !== i)
                             updateField(selectedIndex!, { options: opts })
                           }}
-                          className="text-gray-400 hover:text-red-600"
+                          className="p-2 text-gray-400 hover:text-red-600"
                         >
                           <Trash2 size={12} />
                         </button>

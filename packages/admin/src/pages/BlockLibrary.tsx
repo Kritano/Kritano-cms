@@ -188,7 +188,7 @@ export function BlockLibrary() {
                 {block.fields.length > 0 && (
                   <div className="mt-4">
                     <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Fields</h4>
-                    <div className="overflow-hidden rounded-md border border-gray-200">
+                    <div className="overflow-x-auto rounded-md border border-gray-200">
                       <table className="min-w-full divide-y divide-gray-200 text-sm">
                         <thead className="bg-gray-50">
                           <tr>
