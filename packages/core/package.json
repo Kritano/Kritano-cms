@@ -29,6 +29,7 @@
     "hono": "^4.12.15",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.7",
+    "resend": "^4.0.0",
     "otpauth": "^9.5.1",
     "postgres": "^3.4.9",
     "qrcode": "^1.5.4",

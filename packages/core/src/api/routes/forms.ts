@@ -4,6 +4,7 @@ import { requireAuth } from '../middleware/auth'
 import type { AuthEnv } from '../middleware/auth'
 import { requirePermission } from '../middleware/permission'
 import { dispatchWebhookEvent } from '../../lib/webhooks'
+import { sendEmail } from '../../lib/resend'
 
 export const formRoutes = new Hono<AuthEnv>()
 
@@ -297,6 +298,136 @@ formRoutes.get('/forms/enhance.js', async (c) => {
     'Cache-Control': 'public, max-age=3600',
   })
 })
+
+// ============================================================
+// Generic form submission with email (public JSON API)
+// ============================================================
+
+formRoutes.post('/forms/submit', async (c) => {
+  const body = await c.req.json<Record<string, unknown>>()
+
+  // Require a form slug to look up settings
+  const slug = body._formSlug as string | undefined
+  delete body._formSlug
+
+  // Honeypot check
+  if (body._hp) {
+    return c.json({ success: true })
+  }
+  delete body._hp
+
+  // Validate email field if present
+  const emailField = (body.email as string) || (body.Email as string) || null
+  if (emailField && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailField)) {
+    return c.json({ error: { code: 'VALIDATION', message: 'Invalid email address' } }, 400)
+  }
+
+  // Determine recipient: form's notificationEmail → CONTACT_EMAIL env var
+  let recipientEmail = process.env.CONTACT_EMAIL || null
+  let formName = 'Contact Form'
+
+  if (slug) {
+    const sql = getClient()
+    const formRows = await sql`SELECT * FROM forms WHERE slug = ${slug} LIMIT 1`
+    if (formRows.length > 0) {
+      const form = formRows[0] as Record<string, unknown>
+      const settings = (form.settings || {}) as Record<string, unknown>
+      formName = (form.name as string) || formName
+
+      if (settings.notificationEmail) {
+        recipientEmail = settings.notificationEmail as string
+      }
+
+      // Store submission in database
+      const fields = (form.fields || []) as { name: string; required?: boolean; label: string }[]
+      for (const field of fields) {
+        if (field.required && !body[field.name]) {
+          return c.json({ error: { code: 'VALIDATION', message: `${field.label} is required` } }, 400)
+        }
+      }
+
+      const ip = c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP') || null
+      const userAgent = c.req.header('User-Agent') || null
+
+      await sql`
+        INSERT INTO form_submissions (form_id, data, ip_address, user_agent)
+        VALUES (${form.id as string}, ${JSON.stringify(body)}::jsonb, ${ip}, ${userAgent})
+      `
+
+      // Dispatch webhook
+      dispatchWebhookEvent('form.submitted', {
+        formId: form.id,
+        formSlug: slug,
+        formName: form.name,
+        submission: body,
+      }).catch(() => {})
+    }
+  }
+
+  if (!recipientEmail) {
+    return c.json({ error: { code: 'CONFIG', message: 'No recipient email configured' } }, 500)
+  }
+
+  // Build HTML table from submitted fields
+  const tableRows = Object.entries(body)
+    .filter(([key]) => !key.startsWith('_'))
+    .map(([key, value]) => {
+      const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')
+      const val = value === null || value === undefined ? '' : String(value)
+      return `<tr><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;color:#374151;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#111827">${escapeHtml(val)}</td></tr>`
+    })
+    .join('')
+
+  const notificationHtml = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto">
+      <h2 style="color:#111827;font-size:18px;margin-bottom:16px">New submission: ${escapeHtml(formName)}</h2>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px">${tableRows}</table>
+      <p style="color:#9ca3af;font-size:12px">Submitted at ${new Date().toISOString()}</p>
+    </div>
+  `
+
+  // Send notification to recipient
+  const notifyResult = await sendEmail({
+    to: recipientEmail,
+    subject: `New ${formName} submission`,
+    html: notificationHtml,
+    replyTo: emailField || undefined,
+  })
+
+  if (!notifyResult.success) {
+    return c.json({ error: { code: 'EMAIL', message: notifyResult.error || 'Failed to send email' } }, 500)
+  }
+
+  // Send confirmation to submitter if they provided an email
+  if (emailField) {
+    const confirmHtml = `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto">
+        <h2 style="color:#111827;font-size:18px;margin-bottom:16px">Thanks for getting in touch</h2>
+        <p style="color:#374151;font-size:14px;line-height:1.6">We've received your message and will get back to you as soon as possible.</p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
+        <p style="color:#9ca3af;font-size:12px">This is an automated confirmation. Please don't reply to this email.</p>
+      </div>
+    `
+
+    await sendEmail({
+      to: emailField,
+      subject: `We received your message`,
+      html: confirmHtml,
+    }).catch((err) => {
+      console.error('[Email] Confirmation send failed:', err)
+    })
+  }
+
+  return c.json({ success: true })
+})
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 // Get form schema (public — for SDK and embed)
 formRoutes.get('/forms/:slug', async (c) => {

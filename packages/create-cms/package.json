@@ -6,6 +6,6 @@
     "create-cms": "./src/index.ts"
   },
   "dependencies": {
-    "@kritano/cms": "workspace:*"
+    "@kritano/core": "workspace:*"
   }
 }
