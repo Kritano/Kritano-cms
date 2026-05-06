@@ -62,8 +62,10 @@ export function FormBuilder({ id }: { id?: string }) {
     if (data?.data) {
       setName(data.data.name)
       setSlug(data.data.slug)
-      setFields(data.data.fields || [])
-      setSettings(data.data.settings || {})
+      const rawFields = data.data.fields
+      setFields(Array.isArray(rawFields) ? rawFields : typeof rawFields === 'string' ? JSON.parse(rawFields) : [])
+      const rawSettings = data.data.settings
+      setSettings(typeof rawSettings === 'string' ? JSON.parse(rawSettings) : rawSettings || {})
     }
   }, [data])
 

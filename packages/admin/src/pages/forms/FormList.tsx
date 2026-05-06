@@ -77,7 +77,7 @@ export function FormList() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500 font-mono">{form.slug}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{(form.fields as unknown[]).length}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{(Array.isArray(form.fields) ? form.fields : []).length}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       <Link
                         to="/admin/forms/$id/submissions"
@@ -130,7 +130,7 @@ export function FormList() {
                   </button>
                 </div>
                 <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                  <span>{(form.fields as unknown[]).length} fields</span>
+                  <span>{(Array.isArray(form.fields) ? form.fields : []).length} fields</span>
                   <Link
                     to="/admin/forms/$id/submissions"
                     params={{ id: form.id }}
