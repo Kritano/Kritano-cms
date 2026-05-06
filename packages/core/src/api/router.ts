@@ -22,6 +22,7 @@ import { searchRoutes } from './routes/search'
 import { oauthRoutes } from './routes/oauth'
 import { previewRoutes } from './routes/preview'
 import { updateRoutes } from './routes/updates'
+import { rebuildRoutes } from './routes/rebuild'
 
 function buildFieldNotes(field: Record<string, unknown>): string {
   const notes: string[] = []
@@ -63,6 +64,7 @@ export function createApiRouter(config: CmsConfig): Hono {
   api.route('/api', searchRoutes)
   api.route('/api', previewRoutes)
   api.route('/api', updateRoutes)
+  api.route('/api', rebuildRoutes)
 
   // Config/schema endpoint — admin fetches this to know what collections exist
   api.get('/api/admin/schema', (c) => {
