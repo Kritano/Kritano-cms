@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { authMiddleware } from '../middleware/auth'
+import { requireAuth } from '../middleware/auth'
 
 export const rebuildRoutes = new Hono()
 
@@ -7,7 +7,7 @@ let building = false
 let lastBuild: { status: string; at: string; duration?: number } | null = null
 
 // POST /api/admin/rebuild — trigger a site rebuild (Astro static build)
-rebuildRoutes.post('/admin/rebuild', authMiddleware, async (c) => {
+rebuildRoutes.post('/admin/rebuild', requireAuth, async (c) => {
   if (building) {
     return c.json({ status: 'already_building', lastBuild }, 409)
   }
@@ -46,6 +46,6 @@ rebuildRoutes.post('/admin/rebuild', authMiddleware, async (c) => {
 })
 
 // GET /api/admin/rebuild — check build status
-rebuildRoutes.get('/admin/rebuild', authMiddleware, (c) => {
+rebuildRoutes.get('/admin/rebuild', requireAuth, (c) => {
   return c.json({ building, lastBuild })
 })
