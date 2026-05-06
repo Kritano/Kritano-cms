@@ -7,7 +7,7 @@ import { generateScript } from '@/components/deployment/ScriptGenerator'
 import { generateUpdateScript } from '@/components/deployment/UpdateScriptGenerator'
 import { ScriptOutput } from '@/components/deployment/ScriptOutput'
 import { api } from '@/lib/api'
-import { Download, RotateCcw, Database, HardDrive, Copy, ExternalLink, AlertTriangle, RefreshCw } from 'lucide-react'
+import { Download, RotateCcw, Database, HardDrive, Copy, ExternalLink, AlertTriangle, RefreshCw, Hammer } from 'lucide-react'
 
 type Tab = 'setup' | 'update' | 'backups' | 'updates'
 
@@ -43,6 +43,8 @@ export function Deployment() {
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-900">Deployment</h2>
 
+      <RebuildCard />
+
       <div className="flex gap-1 border-b border-gray-200">
         {tabs.map((t) => (
           <button
@@ -64,6 +66,77 @@ export function Deployment() {
       {tab === 'update' && <UpdateTab />}
       {tab === 'updates' && <CmsUpdatesTab />}
       {tab === 'backups' && <BackupsTab />}
+    </div>
+  )
+}
+
+function RebuildCard() {
+  const [status, setStatus] = useState<'idle' | 'building' | 'success' | 'error'>('idle')
+  const [message, setMessage] = useState('')
+  const [duration, setDuration] = useState<number | null>(null)
+
+  const { data: buildStatus } = useQuery({
+    queryKey: ['rebuild-status'],
+    queryFn: () => api<{ building: boolean; lastBuild: { status: string; at: string; duration?: number } | null }>('/admin/rebuild'),
+    refetchInterval: status === 'building' ? 3000 : false,
+  })
+
+  const rebuild = async () => {
+    setStatus('building')
+    setMessage('')
+    setDuration(null)
+    try {
+      const res = await api<{ status: string; message?: string; duration?: number }>('/admin/rebuild', { method: 'POST' })
+      if (res.status === 'ok') {
+        setStatus('success')
+        setMessage('Site rebuilt successfully')
+        setDuration(res.duration ?? null)
+      } else if (res.status === 'already_building') {
+        setStatus('building')
+        setMessage('A build is already in progress...')
+      } else {
+        setStatus('error')
+        setMessage(res.message || 'Build failed')
+      }
+    } catch (err: any) {
+      setStatus('error')
+      setMessage(err.message || 'Build failed')
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">Rebuild Site</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Rebuild the static site after publishing or updating content.
+          </p>
+          {buildStatus?.lastBuild && (
+            <p className="mt-1 text-xs text-gray-400">
+              Last build: {new Date(buildStatus.lastBuild.at).toLocaleString()}
+              {buildStatus.lastBuild.duration && ` (${(buildStatus.lastBuild.duration / 1000).toFixed(1)}s)`}
+              {' '}&mdash; {buildStatus.lastBuild.status === 'ok' ? '✓ success' : '✗ failed'}
+            </p>
+          )}
+        </div>
+        <Button
+          onClick={rebuild}
+          disabled={status === 'building'}
+          className="shrink-0"
+        >
+          <Hammer size={14} className={cn('mr-1.5', status === 'building' && 'animate-pulse')} />
+          {status === 'building' ? 'Building...' : 'Rebuild'}
+        </Button>
+      </div>
+      {status === 'success' && (
+        <p className="mt-3 text-sm text-green-600">
+          {message}{duration ? ` (${(duration / 1000).toFixed(1)}s)` : ''}
+        </p>
+      )}
+      {status === 'error' && (
+        <p className="mt-3 text-sm text-red-600">{message}</p>
+      )}
     </div>
   )
 }
