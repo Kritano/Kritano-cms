@@ -155,7 +155,10 @@ export function FormBuilder({ id }: { id?: string }) {
 
   const selectedField = selectedIndex !== null ? fields[selectedIndex] : null
   const siteUrl = window.location.origin
-  const submissions = subsData?.data ?? []
+  const submissions = (subsData?.data ?? []).map((sub) => ({
+    ...sub,
+    data: typeof sub.data === 'string' ? JSON.parse(sub.data) : sub.data || {},
+  }))
   const subTotalPages = subsData?.totalPages ?? 1
   const displayFields = fields.slice(0, 4)
 

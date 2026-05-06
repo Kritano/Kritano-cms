@@ -41,9 +41,13 @@ export function FormSubmissions({ formId }: { formId: string }) {
   })
 
   const form = formData?.data
-  const submissions = data?.data ?? []
+  const submissions = (data?.data ?? []).map((sub) => ({
+    ...sub,
+    data: typeof sub.data === 'string' ? JSON.parse(sub.data) : sub.data || {},
+  }))
   const totalPages = data?.totalPages ?? 1
-  const fields = form?.fields ?? []
+  const rawFields = form?.fields
+  const fields: { name: string; label: string }[] = Array.isArray(rawFields) ? rawFields : typeof rawFields === 'string' ? JSON.parse(rawFields) : []
 
   function handleExport() {
     window.open(`/api/admin/forms/${formId}/export`, '_blank')
