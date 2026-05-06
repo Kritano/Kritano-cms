@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { api } from '@/lib/api'
+import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { GripVertical, Trash2, Plus, Settings, Code } from 'lucide-react'
+import { GripVertical, Trash2, Plus, Settings, Code, Inbox, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface FormField {
   name: string
@@ -28,6 +29,13 @@ interface FormSettings {
   redirectUrl?: string
 }
 
+interface Submission {
+  id: string
+  data: Record<string, unknown>
+  ip_address: string | null
+  created_at: string
+}
+
 const FIELD_TYPES = [
   { type: 'text', label: 'Text' },
   { type: 'email', label: 'Email' },
@@ -41,6 +49,7 @@ const FIELD_TYPES = [
 
 export function FormBuilder({ id }: { id?: string }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const isNew = !id
 
   const [name, setName] = useState('')
@@ -48,9 +57,10 @@ export function FormBuilder({ id }: { id?: string }) {
   const [fields, setFields] = useState<FormField[]>([])
   const [settings, setSettings] = useState<FormSettings>({})
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [activeTab, setActiveTab] = useState<'fields' | 'settings' | 'embed'>('fields')
+  const [activeTab, setActiveTab] = useState<'fields' | 'settings' | 'embed' | 'submissions'>('fields')
   const [error, setError] = useState('')
   const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [subPage, setSubPage] = useState(1)
 
   const { data } = useQuery({
     queryKey: ['form', id],
@@ -84,6 +94,24 @@ export function FormBuilder({ id }: { id?: string }) {
     },
     onSuccess: () => navigate({ to: '/admin/forms' }),
     onError: (err: any) => setError(err.message || 'Failed to save form'),
+  })
+
+  // Submissions query
+  const { data: subsData, isLoading: subsLoading } = useQuery({
+    queryKey: ['form-submissions', id, subPage],
+    queryFn: () =>
+      api<{ data: Submission[]; total: number; totalPages: number }>(
+        `/admin/forms/${id}/submissions?page=${subPage}&limit=20`,
+      ),
+    enabled: activeTab === 'submissions' && !!id,
+  })
+
+  const deleteSubMutation = useMutation({
+    mutationFn: (subId: string) =>
+      api(`/admin/forms/${id}/submissions/${subId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['form-submissions', id] })
+    },
   })
 
   function addField(type: string) {
@@ -127,6 +155,9 @@ export function FormBuilder({ id }: { id?: string }) {
 
   const selectedField = selectedIndex !== null ? fields[selectedIndex] : null
   const siteUrl = window.location.origin
+  const submissions = subsData?.data ?? []
+  const subTotalPages = subsData?.totalPages ?? 1
+  const displayFields = fields.slice(0, 4)
 
   return (
     <div className="space-y-6">
@@ -152,16 +183,17 @@ export function FormBuilder({ id }: { id?: string }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 overflow-x-auto border-b border-gray-200">
         {[
           { key: 'fields' as const, label: 'Fields', icon: Plus },
           { key: 'settings' as const, label: 'Settings', icon: Settings },
           { key: 'embed' as const, label: 'Embed', icon: Code },
+          ...(!isNew ? [{ key: 'submissions' as const, label: 'Submissions', icon: Inbox }] : []),
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
                 ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -372,6 +404,131 @@ export function FormBuilder({ id }: { id?: string }) {
 <script src="${siteUrl}/api/forms/embed.js" async></script>`}
             </pre>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'submissions' && id && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              {subsData?.total ?? 0} submission{(subsData?.total ?? 0) !== 1 ? 's' : ''}
+            </p>
+            <a
+              href={`/api/admin/forms/${id}/export`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <Download size={14} />
+              Export CSV
+            </a>
+          </div>
+
+          {subsLoading ? (
+            <p className="py-8 text-center text-sm text-gray-400">Loading…</p>
+          ) : submissions.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-300 py-12 text-center">
+              <Inbox size={32} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-sm text-gray-500">No submissions yet.</p>
+            </div>
+          ) : (
+            <>
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto rounded-lg border border-gray-200 sm:block">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {displayFields.map((f) => (
+                        <th key={f.name} className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                          {f.label}
+                        </th>
+                      ))}
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Submitted</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {submissions.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-gray-50">
+                        {displayFields.map((f) => (
+                          <td key={f.name} className="px-4 py-3 text-gray-900 max-w-[200px] truncate">
+                            {sub.data[f.name] !== undefined ? String(sub.data[f.name]) : '—'}
+                          </td>
+                        ))}
+                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                          {formatDate(sub.created_at)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this submission?')) deleteSubMutation.mutate(sub.id)
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="space-y-2 sm:hidden">
+                {submissions.map((sub) => (
+                  <div key={sub.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        {displayFields.slice(0, 2).map((f) => (
+                          <p key={f.name} className="truncate text-sm text-gray-900">
+                            <span className="text-gray-400">{f.label}: </span>
+                            {sub.data[f.name] !== undefined ? String(sub.data[f.name]) : '—'}
+                          </p>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm('Delete this submission?')) deleteSubMutation.mutate(sub.id)
+                        }}
+                        className="shrink-0 p-1 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-xs text-gray-400">{formatDate(sub.created_at)}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {subTotalPages > 1 && (
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={subPage <= 1}
+                    onClick={() => setSubPage(subPage - 1)}
+                  >
+                    <ChevronLeft size={14} className="mr-1" />
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-500">
+                    Page {subPage} of {subTotalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={subPage >= subTotalPages}
+                    onClick={() => setSubPage(subPage + 1)}
+                  >
+                    Next
+                    <ChevronRight size={14} className="ml-1" />
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
