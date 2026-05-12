@@ -18,7 +18,6 @@
     "./mcp": "./packages/mcp/src/index.ts"
   },
   "scripts": {
-    "postinstall": "bun run build:assets",
     "build": "bun run --filter '*' build",
     "build:assets": "cd packages/types && bun run build && cd ../sdk && bun run build && cd ../admin && bun run build",
     "typecheck": "bun run --filter '*' typecheck"

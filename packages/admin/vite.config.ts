@@ -1,10 +1,27 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
+import { writeFileSync } from 'node:fs'
+
+// Writes dist/.build-complete as the final step of `vite build`. server.ts
+// uses this sentinel to detect partial/OOM-killed builds — without it a
+// half-written dist would be served as broken 500s.
+function buildSentinel(): Plugin {
+  return {
+    name: 'kritano:build-sentinel',
+    apply: 'build',
+    closeBundle() {
+      writeFileSync(
+        resolve(__dirname, 'dist/.build-complete'),
+        `${new Date().toISOString()}\n`,
+      )
+    },
+  }
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), buildSentinel()],
   base: '/admin/',
   resolve: {
     alias: {

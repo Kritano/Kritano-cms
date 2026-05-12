@@ -27,7 +27,28 @@ syncDeclaredForms().catch((err) => console.warn(`[CMS] Form sync: ${err}`))
 // Serve admin static files in production
 // In dev, admin is served by Vite with HMR on a separate port
 const adminDistPath = join(import.meta.dir, 'packages/admin/dist')
-const adminBuilt = existsSync(adminDistPath)
+const adminSentinelPath = join(adminDistPath, '.build-complete')
+const adminBuilt = existsSync(adminSentinelPath)
+const adminPartial = !adminBuilt && existsSync(adminDistPath)
+
+if (adminPartial) {
+  console.warn(
+    '[CMS] packages/admin/dist exists but .build-complete is missing — admin build is partial or corrupted (likely OOM killed during build). Run `bun run build:assets` on a machine with enough RAM (~2 GB free) and redeploy, or rebuild locally and rsync the dist up. Serving an explanatory page at /admin instead of a broken bundle.',
+  )
+  app.get('/admin', (c) => c.redirect('/admin/'))
+  app.get('/admin/*', (c) =>
+    c.html(
+      '<!doctype html><meta charset="utf-8"><title>Admin unavailable</title>' +
+        '<style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:4rem auto;padding:0 1.5rem;color:#222;line-height:1.5}code{background:#f3f3f3;padding:.1rem .35rem;border-radius:.25rem}</style>' +
+        '<h1>Admin build incomplete</h1>' +
+        '<p>The admin UI bundle in <code>packages/admin/dist</code> is missing its build sentinel, which means the last build did not finish (commonly an out-of-memory kill on small VPS instances).</p>' +
+        '<p>To recover, rebuild on a machine with at least ~2 GB of free RAM and redeploy:</p>' +
+        '<pre><code>bun run build:assets</code></pre>' +
+        '<p>Or build locally and <code>rsync</code> <code>packages/admin/dist/</code> up to the server.</p>',
+      503,
+    ),
+  )
+}
 
 if (adminBuilt) {
   // Redirect /admin to /admin/

@@ -60,6 +60,15 @@ This single command: starts Docker Compose, creates initial migration, applies m
 - Media stored locally in `./media/` (dev) or `/var/cms/media/` (prod)
 - Admin collection schemas are hardcoded in `packages/admin/src/pages/collection/schemas.ts` — keep in sync with `cms.config.ts`
 
+## Admin UI ships pre-built
+
+`packages/admin/dist/` is committed to git (the *only* dist directory that is — see `.gitignore`). Consumer servers do not run the admin Vite build, because 1–2 GB VPSes get OOM-killed mid-build and end up serving a corrupted bundle.
+
+- If you change anything under `packages/admin/src/`, run `bun run build:assets` and commit the updated `packages/admin/dist/` in the same PR.
+- The admin build writes `packages/admin/dist/.build-complete` as its final step. `server.ts` checks for that sentinel — a missing sentinel means the dist is partial and the server returns a clear 503 page at `/admin` instead of a broken bundle.
+- There is no `postinstall` build step. `bun install` on a server does not touch the admin.
+- Full maintainer release flow lives in [docs/deployment.md → Releasing](docs/deployment.md#releasing-maintainers).
+
 ## Documentation
 
 Docs live in `/docs/*.md`. When writing or updating docs:

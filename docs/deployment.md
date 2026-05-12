@@ -72,7 +72,7 @@ The generated bash script sets up a complete production environment:
 
 ### Application
 
-- Clones the CMS repository
+- Clones the CMS repository (admin UI ships pre-built in `packages/admin/dist/` — no build runs on the server)
 - Runs `bun install`
 - Generates a `.env` file with:
   - Random `JWT_SECRET`
@@ -81,7 +81,7 @@ The generated bash script sets up a complete production environment:
   - `MEDIA_PATH` set to `/var/cms/media/`
   - Your domain as `SITE_URL`
 - Runs database migrations
-- Builds the admin UI
+- Builds the Astro frontend only (the heavy admin Vite build does not run on the server)
 
 ### Web server
 
@@ -154,11 +154,21 @@ createdb -O cms cms
 bun run packages/cli/src/commands/migrate.ts
 ```
 
-3. **Build the admin UI:**
+3. **Build the frontend:**
 
 ```bash
 bun run packages/cli/src/commands/build.ts
 ```
+
+The admin UI is already built and committed to the repository at `packages/admin/dist/` — `cms build` only builds the Astro frontend on the server. This means a 1–2 GB VPS will not be killed by the OOM killer trying to run the admin Vite build during deploy.
+
+If you need to rebuild the admin (for example, you've forked it and changed admin source), do it on a development machine with at least ~2 GB of free RAM:
+
+```bash
+bun run build:assets
+```
+
+This produces `packages/admin/dist/` with a `.build-complete` sentinel file. The server verifies that sentinel before serving the admin — a partial/corrupted dist (e.g. from an OOM-killed build) is detected and `/admin` returns a clear 503 page instead of a broken bundle.
 
 4. **Create the media directory:**
 
@@ -251,3 +261,27 @@ GET    /api/admin/backups              List backup files
 POST   /api/admin/backups              Trigger manual backup
 GET    /api/admin/backups/:filename    Download backup file
 ```
+
+## Releasing (maintainers)
+
+The admin UI ships pre-built in the repository at `packages/admin/dist/`. This is intentional — consumer servers (often 1–2 GB VPS instances) cannot reliably run the admin Vite build without being killed by the OOM killer mid-build, which leaves a corrupted dist and a broken `/admin` route.
+
+Other headless CMSes (Strapi, Payload, Directus) follow the same pattern: the admin is built once by the maintainer and shipped, not rebuilt on every consumer install.
+
+### Before tagging a release
+
+Rebuild the admin so the committed dist matches the source:
+
+```bash
+bun run build:assets
+git add packages/admin/dist
+git commit -m "build: refresh admin dist for release"
+```
+
+`build:assets` builds `@kritano/types`, `@kritano/sdk`, then `@kritano/admin`. The admin build writes a `.build-complete` sentinel into `dist/` as its final step; do not commit a dist without that file.
+
+### Why dist is tracked in git
+
+- Every other build artifact (`packages/core/dist`, `packages/sdk/dist`, theme `dist/`, etc.) is still gitignored — see `.gitignore`.
+- Only `packages/admin/dist/` is tracked, because it is what consumers serve.
+- Rebuild noise (hashed asset filenames change every build) is the price; the alternative — consumers running the build on deploy — has caused production outages on small VPSes.

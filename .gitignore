@@ -1,7 +1,17 @@
 node_modules/
-dist/
 .env
 .env.local
 *.log
 .DS_Store
 /media/
+
+# Build artifacts — ignored, EXCEPT packages/admin/dist which ships pre-built.
+# See docs/deployment.md "Releasing" for the rationale.
+packages/types/dist/
+packages/core/dist/
+packages/sdk/dist/
+packages/astro/dist/
+packages/cli/dist/
+packages/mcp/dist/
+themes/*/dist/
+**/tsconfig.tsbuildinfo

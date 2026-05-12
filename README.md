@@ -172,8 +172,10 @@ bun run packages/cli/src/index.ts dev          # Start everything
 bun run packages/cli/src/commands/migrate.ts    # Apply migrations
 bun run packages/cli/src/commands/generate.ts   # Regenerate types
 cd packages/core && bun test                    # Run tests
-cd packages/admin && bun run build              # Build admin
+bun run build:assets                            # Rebuild admin dist (commit before tagging a release)
 ```
+
+The admin UI ships pre-built in `packages/admin/dist/` so consumer servers never run the heavy Vite build. Maintainers must rebuild and commit `packages/admin/dist/` before tagging a release — see [docs/deployment.md → Releasing](docs/deployment.md#releasing-maintainers).
 
 ## Deployment
 

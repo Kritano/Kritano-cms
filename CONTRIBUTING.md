@@ -40,7 +40,14 @@ bun run typecheck                        # All packages
 ```bash
 cd packages/admin && bun run build       # Admin UI
 bun run build                            # All packages
+bun run build:assets                     # Rebuild types + sdk + admin (run before tagging a release)
 ```
+
+#### Admin UI is committed pre-built
+
+The compiled admin bundle in `packages/admin/dist/` is tracked in git. Consumer servers (small VPSes) cannot reliably run the admin Vite build without being OOM-killed mid-build, leaving a corrupted dist — so the maintainer builds it once per release. If your PR changes anything under `packages/admin/src/`, run `bun run build:assets` and commit the updated `packages/admin/dist/` alongside your source changes.
+
+The admin build writes `packages/admin/dist/.build-complete` as its final step. `server.ts` verifies that sentinel before serving the admin — a missing sentinel means the dist is partial and is treated as broken.
 
 ## Code conventions
 
@@ -85,6 +92,7 @@ Do not add code for features outside v0.1 scope: user roles/permissions, multi-s
 - [ ] Tests pass (`bun test`)
 - [ ] Type check passes (`bun run typecheck`)
 - [ ] Build succeeds (`bun run build`)
+- [ ] If `packages/admin/src/` changed, `bun run build:assets` was run and the updated `packages/admin/dist/` is committed
 - [ ] Documentation updated for any user-facing changes
 - [ ] No v0.2+ features introduced
 - [ ] British English spelling in docs and UI text

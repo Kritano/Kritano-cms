@@ -44,6 +44,8 @@ systemctl restart cms-api cms-worker
 
 Be aware that `git pull` may conflict with local changes to theme files or configuration if upstream has modified those files.
 
+> **Note — admin UI ships pre-built.** `git pull` brings down the latest `packages/admin/dist/` along with the source, so `bun run build` only builds the Astro frontend on the server. The admin Vite build does not run on the production VPS — this prevents the OOM kill / corrupted-dist failure mode that small (1–2 GB) servers used to hit during deploy. If you have forked the admin and need to rebuild it, do so on a machine with ≥2 GB free RAM via `bun run build:assets`. See [deployment.md → Releasing](deployment.md#releasing-maintainers) for the maintainer workflow.
+
 ## Rollback
 
 If an update causes issues:
