@@ -9,6 +9,7 @@ import { buildResolvers } from './graphql/resolvers'
 import { startScheduleWorker } from '../lib/scheduler'
 import { startWebhookWorker } from '../lib/webhooks'
 import { redirectMiddleware } from './middleware/redirects'
+import { rebuildNginxRedirects } from '../lib/nginx-redirects'
 import { loadPlugins, fireReadyHook } from '../plugins/loader'
 import { getPluginRegistry } from '../plugins/registry'
 import { isSearchAvailable, syncSchemas } from '../search'
@@ -68,6 +69,10 @@ export function createServer(config: CmsConfig): Hono {
     const response = await yoga.handle(c.req.raw)
     return response
   })
+
+  // Sync the nginx redirects snippet to DB state on boot. No-op unless
+  // NGINX_REDIRECTS_SNIPPET is set. Fire-and-forget — must not block startup.
+  rebuildNginxRedirects().catch((err) => console.warn(`[nginx-redirects] startup: ${err}`))
 
   return app
 }

@@ -3,6 +3,11 @@ import { getClient } from '../../db/client'
 import { requireAuth } from '../middleware/auth'
 import type { AuthEnv } from '../middleware/auth'
 import { requirePermission } from '../middleware/permission'
+import { rebuildNginxRedirects } from '../../lib/nginx-redirects'
+
+function fireRebuild(): void {
+  rebuildNginxRedirects().catch((err) => console.warn(`[redirects] rebuild: ${err}`))
+}
 
 export const redirectRoutes = new Hono<AuthEnv>()
 
@@ -94,6 +99,7 @@ redirectRoutes.post('/admin/redirects', requireAuth, requirePermission('redirect
     RETURNING *
   `
 
+  fireRebuild()
   return c.json({ data: rows[0] }, 201)
 })
 
@@ -137,6 +143,7 @@ redirectRoutes.put('/admin/redirects/:id', requireAuth, requirePermission('redir
     return c.json({ error: { code: 'NOT_FOUND', message: 'Redirect not found' } }, 404)
   }
 
+  fireRebuild()
   return c.json({ data: rows[0] })
 })
 
@@ -150,6 +157,7 @@ redirectRoutes.delete('/admin/redirects/:id', requireAuth, requirePermission('re
     return c.json({ error: { code: 'NOT_FOUND', message: 'Redirect not found' } }, 404)
   }
 
+  fireRebuild()
   return c.json({ ok: true })
 })
 
@@ -192,6 +200,7 @@ redirectRoutes.post('/admin/redirects/import', requireAuth, requirePermission('r
     }
   }
 
+  if (imported > 0) fireRebuild()
   return c.json({ data: { imported, skipped, errors } })
 })
 

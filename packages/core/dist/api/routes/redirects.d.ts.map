@@ -1,1 +1,1 @@
-{"version":3,"file":"redirects.d.ts","sourceRoot":"","sources":["../../../src/api/routes/redirects.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,MAAM,CAAA;AAG3B,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAA;AAGjD,eAAO,MAAM,cAAc,sDAAsB,CAAA"}
+{"version":3,"file":"redirects.d.ts","sourceRoot":"","sources":["../../../src/api/routes/redirects.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,MAAM,CAAA;AAG3B,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAA;AAQjD,eAAO,MAAM,cAAc,sDAAsB,CAAA"}
