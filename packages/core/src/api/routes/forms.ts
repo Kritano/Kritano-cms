@@ -351,7 +351,7 @@ formRoutes.post('/forms/submit', async (c) => {
 
       await sql`
         INSERT INTO form_submissions (form_id, data, ip_address, user_agent)
-        VALUES (${form.id as string}, ${JSON.stringify(body)}::jsonb, ${ip}, ${userAgent})
+        VALUES (${form.id as string}, ${sql.json(body as any)}, ${ip}, ${userAgent})
       `
 
       // Dispatch webhook
@@ -491,7 +491,7 @@ formRoutes.post('/forms/:slug/submit', async (c) => {
 
   await sql`
     INSERT INTO form_submissions (form_id, data, ip_address, user_agent)
-    VALUES (${form.id as string}, ${JSON.stringify(data)}::jsonb, ${ip}, ${userAgent})
+    VALUES (${form.id as string}, ${sql.json(data as any)}, ${ip}, ${userAgent})
   `
 
   // Dispatch webhook
