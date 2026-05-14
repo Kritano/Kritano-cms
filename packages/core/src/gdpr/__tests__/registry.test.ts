@@ -6,9 +6,11 @@ import {
   clearGdprSources,
   discoverCollectionsSources,
   discoverFormsSources,
+  findEmailFieldInForm,
   getGdprSource,
   getRegisteredSources,
   initGdpr,
+  pickFormSourceFromDbRow,
   registerGdprSource,
 } from '../registry'
 
@@ -92,6 +94,118 @@ describe('discoverFormsSources', () => {
     })
     expect(discoverFormsSources()).toHaveLength(0)
     expect(getRegisteredSources()).toHaveLength(0)
+  })
+
+  test('falls back to name heuristic when no email-typed field exists', () => {
+    // Admin-builder forms sometimes emit type:'text' for email fields.
+    addForm('resource-gate', {
+      fields: [
+        { name: 'name',  type: 'text', label: 'Name' },
+        { name: 'email', type: 'text', label: 'Email' }, // ← type:'text' but matches name heuristic
+      ],
+    })
+    const discovered = discoverFormsSources()
+    expect(discovered).toHaveLength(1)
+    expect(discovered[0].emailColumn).toBe('email')
+  })
+
+  test('explicit type:"email" wins over name heuristic', () => {
+    addForm('multi-email', {
+      fields: [
+        { name: 'name',          type: 'text',  label: 'Name' },
+        { name: 'companyEmail',  type: 'text',  label: 'Company email' },  // heuristic-matchable
+        { name: 'workAddress',   type: 'email', label: 'Work email' },     // explicit type
+      ],
+    })
+    const discovered = discoverFormsSources()
+    expect(discovered[0].emailColumn).toBe('workAddress')
+  })
+})
+
+describe('findEmailFieldInForm (pure helper)', () => {
+  test('returns name of first type:email field', () => {
+    expect(findEmailFieldInForm([
+      { name: 'a', type: 'text' },
+      { name: 'b', type: 'email' },
+      { name: 'c', type: 'email' },
+    ])).toBe('b')
+  })
+
+  test('falls back to name match', () => {
+    expect(findEmailFieldInForm([
+      { name: 'fullName', type: 'text' },
+      { name: 'contact_email', type: 'text' },
+    ])).toBe('contact_email')
+  })
+
+  test('returns undefined for forms without any candidate', () => {
+    expect(findEmailFieldInForm([
+      { name: 'message', type: 'textarea' },
+      { name: 'phone', type: 'phone' },
+    ])).toBeUndefined()
+  })
+})
+
+describe('pickFormSourceFromDbRow', () => {
+  test('builds a source from a forms-table row with type:email', () => {
+    const source = pickFormSourceFromDbRow({
+      slug: 'contact',
+      name: 'Contact',
+      fields: [
+        { name: 'name',  type: 'text',  label: 'Name' },
+        { name: 'email', type: 'email', label: 'Email' },
+      ],
+    })
+    expect(source).not.toBeNull()
+    expect(source!.name).toBe('form:contact')
+    expect(source!.displayName).toBe('Contact (form submission)')
+    expect(source!.emailColumn).toBe('email')
+    expect(source!.table).toBe('form_submissions')
+    expect(source!.autoDiscovered).toBe(true)
+  })
+
+  test('uses name heuristic for admin-builder forms with type:text', () => {
+    const source = pickFormSourceFromDbRow({
+      slug: 'resource-gate',
+      name: 'Resource gate',
+      fields: [
+        { name: 'name',  type: 'text', label: 'Name' },
+        { name: 'email', type: 'text', label: 'Email' },
+      ],
+    })
+    expect(source).not.toBeNull()
+    expect(source!.emailColumn).toBe('email')
+  })
+
+  test('returns null when no email-shaped field is present', () => {
+    const source = pickFormSourceFromDbRow({
+      slug: 'feedback',
+      name: 'Feedback',
+      fields: [{ name: 'message', type: 'textarea' }],
+    })
+    expect(source).toBeNull()
+  })
+
+  test('tolerates a non-array fields value', () => {
+    const source = pickFormSourceFromDbRow({
+      slug: 'broken',
+      name: 'Broken',
+      fields: 'not-an-array' as unknown,
+    })
+    expect(source).toBeNull()
+  })
+
+  test('skips field entries with missing name/type', () => {
+    const source = pickFormSourceFromDbRow({
+      slug: 'partial',
+      name: 'Partial',
+      fields: [
+        { name: 'email' },                  // missing type
+        { type: 'email' },                  // missing name
+        { name: 'realEmail', type: 'email' },
+      ],
+    })
+    expect(source!.emailColumn).toBe('realEmail')
   })
 })
 
