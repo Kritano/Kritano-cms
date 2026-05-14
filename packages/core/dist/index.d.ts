@@ -4,7 +4,7 @@ export { defineCollection } from './schema/defineCollection';
 export { validateSchema, SchemaValidationError } from './schema/validate';
 export { addForm, getDeclaredForms, type FormFieldConfig, type FormConfig } from './schema/addForm';
 export { syncDeclaredForms } from './lib/form-sync';
-export { text, textarea, richText, slug, url, number, boolean, datetime, select, multiSelect, media, relation, seoBlock, blocks, block, array, colour, } from './schema/fields';
+export { text, email, textarea, richText, slug, url, number, boolean, datetime, select, multiSelect, media, relation, seoBlock, blocks, block, array, colour, } from './schema/fields';
 export { FieldBuilder } from './schema/fields';
 export { getClient, getDb, closeConnection, getConnectionString, collectionToTable, collectionToTableName, fieldToColumn, fieldToColumnName, generateCreateTableSQL, generateMediaTableSQL, generateUsersTableSQL, generateSiteSettingsTableSQL, generateFullSchemaSQL, createMigration, diffSnapshots, listMigrations, runMigrations, type TableDefinition, type ColumnDefinition, type MigrationFile, type SchemaSnapshot, } from './db';
 export { createServer, startServer, getServerApp } from './api/server';

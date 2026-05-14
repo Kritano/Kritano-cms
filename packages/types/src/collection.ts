@@ -31,6 +31,13 @@ export interface TextFieldOptions extends BaseFieldOptions {
   min?: number
   max?: number
   pattern?: string
+  /**
+   * Optional semantic hint for the value's shape. Used by the GDPR module to
+   * identify personal-data columns without introducing a new FieldType (which
+   * would break exhaustive type switches across the codebase). Not enforced
+   * in the DB layer — column type stays text.
+   */
+  format?: 'email'
 }
 
 export interface TextareaFieldOptions extends BaseFieldOptions {

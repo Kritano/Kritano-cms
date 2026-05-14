@@ -10,6 +10,7 @@
   },
   "exports": {
     "./core": "./packages/core/src/index.ts",
+    "./gdpr": "./packages/core/src/gdpr/index.ts",
     "./admin": "./packages/admin/src/main.tsx",
     "./astro": "./packages/astro/src/index.ts",
     "./sdk": "./packages/sdk/src/index.ts",

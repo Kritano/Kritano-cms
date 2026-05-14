@@ -13,6 +13,8 @@ import { loadPlugins, fireReadyHook } from '../plugins/loader'
 import { getPluginRegistry } from '../plugins/registry'
 import { isSearchAvailable, syncSchemas } from '../search'
 import { installerGuard, installerRoutes } from '../installer'
+import { initGdpr } from '../gdpr/registry'
+import { isGdprConfigured } from '../gdpr/normalise'
 
 let _serverApp: Hono | null = null
 
@@ -32,6 +34,21 @@ export function createServer(config: CmsConfig): Hono {
 
   // Installer routes (only active before first setup)
   app.route('/api', installerRoutes)
+
+  // GDPR auto-discovery — runs once at server boot. Picks up forms declared
+  // via addForm() and collections with email fields; any custom sources
+  // registered via registerGdprSource() in cms.config.ts are already in the
+  // registry by this point. Auto-discovery is always safe to run; the API
+  // routes themselves gate on GDPR_AUDIT_SECRET being set.
+  const gdprResult = initGdpr(config)
+  if (gdprResult.totalSources > 0 && !isGdprConfigured()) {
+    console.warn(
+      `[CMS] GDPR auto-discovered ${gdprResult.totalSources} personal-data source(s) ` +
+        `(${gdprResult.formsDiscovered} form(s), ${gdprResult.collectionsDiscovered} collection(s)) ` +
+        `but GDPR_AUDIT_SECRET is not set. /admin/gdpr will return 503 until you add it to .env. ` +
+        `See docs/gdpr.md.`,
+    )
+  }
 
   // REST API routes
   const apiRouter = createApiRouter(config)

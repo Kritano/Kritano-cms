@@ -11,6 +11,7 @@ export { syncDeclaredForms } from './lib/form-sync'
 // Field builders
 export {
   text,
+  email,
   textarea,
   richText,
   slug,

@@ -1,5 +1,6 @@
 export { useCMS, getCMSClient, defineTheme, getPreviewToken, getPreviewBannerHtml } from './runtime'
 export { cmsIntegration } from './integration'
+export { onRequest } from './middleware'
 export { renderSearchForm, type SearchComponentProps } from './search'
 export { generateSeoMeta, generateJsonLd, generateSeoHead, type SeoMetaInput } from './seo'
 export type { CMSContext, ThemeConfig } from './types'

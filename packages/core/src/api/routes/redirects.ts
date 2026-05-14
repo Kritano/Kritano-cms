@@ -6,6 +6,32 @@ import { requirePermission } from '../middleware/permission'
 
 export const redirectRoutes = new Hono<AuthEnv>()
 
+// Public: full redirect list for frontend middleware caches. No auth — paths
+// are not sensitive and the frontend needs them on every request.
+redirectRoutes.get('/redirects/all', async (c) => {
+  const sql = getClient()
+  const rows = await sql`SELECT id, from_path, to_path, type FROM redirects`
+  const data = rows.map((r) => {
+    const row = r as Record<string, unknown>
+    return {
+      id: row.id as string,
+      fromPath: row.from_path as string,
+      toPath: row.to_path as string,
+      type: row.type as number,
+    }
+  })
+  return c.json({ data })
+})
+
+// Public: increment hits counter. Called fire-and-forget from frontend
+// middleware after issuing a redirect.
+redirectRoutes.post('/redirects/:id/hit', async (c) => {
+  const id = c.req.param('id')
+  const sql = getClient()
+  await sql`UPDATE redirects SET hits = hits + 1 WHERE id = ${id}`.catch(() => {})
+  return c.json({ ok: true })
+})
+
 // List redirects (paginated, searchable)
 redirectRoutes.get('/admin/redirects', requireAuth, requirePermission('redirects'), async (c) => {
   const sql = getClient()

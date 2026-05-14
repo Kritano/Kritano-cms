@@ -1,5 +1,6 @@
 export { FieldBuilder } from './builder';
 export { text, TextFieldBuilder } from './text';
+export { email, EmailFieldBuilder } from './email';
 export { textarea, TextareaFieldBuilder } from './textarea';
 export { richText, RichTextFieldBuilder } from './richText';
 export { slug, SlugFieldBuilder } from './slug';
