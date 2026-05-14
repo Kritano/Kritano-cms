@@ -22,6 +22,12 @@ export interface GdprSource {
   createdAtColumn?: string
   /** Optional override for the search query. Receives a normalised (lower, trim) email. */
   searchFn?: (email: string) => Promise<unknown[]>
+  /**
+   * Optional override for the per-row DELETE. Receives the full row as
+   * returned by searchFn. If absent, the default deletes by primary key:
+   * `DELETE FROM "<table>" WHERE id = $1`.
+   */
+  deleteFn?: (row: Record<string, unknown>) => Promise<void>
   /** Optional callback after row deletion (e.g. delete an associated file). */
   onDelete?: (row: Record<string, unknown>) => Promise<void>
   /** Columns to include in SAR exports. Default: all. */
@@ -58,9 +64,14 @@ export interface SearchResult {
 export interface PerSourceDeletionResult {
   source: string
   displayName: string
+  /** Overall per-source outcome — success if every row succeeded, failed otherwise. */
   status: DeletionStatus
+  recordsAttempted: number
   recordsDeleted: number
+  recordsFailed: number
+  /** Populated when the entire source failed (e.g. searchFn threw). */
   failureReason?: string
+  /** IDs in gdpr_deletion_log written for this source's rows (one per attempt). */
   deletionLogIds: string[]
 }
 

@@ -94,6 +94,11 @@ SITE_URL=http://localhost:3006
 ADMIN_URL=http://localhost:3006/admin
 MEDIA_PATH=./media
 CMS_UPDATE_CHANNEL=development
+
+# Optional — required only if you handle personal data and use the GDPR admin
+# tooling (/admin/gdpr). Generate once with `openssl rand -hex 32` and NEVER
+# rotate. See docs/gdpr.md.
+GDPR_AUDIT_SECRET=
 ```
 
 Generate real secrets:
@@ -177,6 +182,7 @@ Your files are yours. A CMS update (`bun update @kritano/cms`) only changes `nod
 | Field | Import | Example |
 |-------|--------|---------|
 | `text()` | `text` | `text().required().min(3).max(100)` |
+| `email()` | `email` | `email().required()` — text field marked for GDPR auto-discovery |
 | `textarea()` | `textarea` | `textarea().maxLength(300)` |
 | `richText()` | `richText` | `richText()` |
 | `slug()` | `slug` | `slug().from('title')` |
@@ -297,3 +303,4 @@ The admin shows a notification at **Deployment → Updates** when a new version 
 - [Search](search.md) — full-text search with Typesense
 - [OAuth](oauth.md) — Google and GitHub login
 - [Live preview](preview.md) — preview draft content
+- [GDPR](gdpr.md) — subject access requests, erasure, retention, and audit logging

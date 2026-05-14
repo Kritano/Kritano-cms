@@ -30,6 +30,21 @@ export {
   initGdpr,
 } from './registry'
 
+export { runSearch, type RunSearchOptions, type RunSearchResult } from './search'
+
+export {
+  runDelete,
+  GdprUnsupportedMethodError,
+  type RunDeleteOptions,
+} from './delete'
+
+export {
+  runExport,
+  type RunExportOptions,
+  type RunExportResult,
+  type ExportPayload,
+} from './export'
+
 export type {
   GdprSource,
   SearchRecord,

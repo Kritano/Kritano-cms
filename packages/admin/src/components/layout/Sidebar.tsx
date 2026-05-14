@@ -21,6 +21,7 @@ import {
   KeyRound,
   Layers,
   ArrowLeftRight,
+  ShieldCheck,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -93,6 +94,7 @@ export function Sidebar({ collections, open, onClose }: SidebarProps) {
     { label: 'Webhooks', href: '/admin/webhooks', icon: Webhook },
     { label: 'API Keys', href: '/admin/api-keys', icon: KeyRound },
     { label: 'Plugins', href: '/admin/plugins', icon: Puzzle },
+    { label: 'GDPR', href: '/admin/gdpr', icon: ShieldCheck },
     { label: 'Site', href: '/admin/site', icon: Settings },
     { label: 'Site Health', href: '/admin/site/health', icon: Activity },
     { label: 'Deployment', href: '/admin/deployment', icon: Server, badge: updateCount || undefined },

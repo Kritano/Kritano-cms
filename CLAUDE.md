@@ -11,7 +11,7 @@ Bun workspaces monorepo. All code is TypeScript — no JavaScript files.
 | Package | Purpose |
 |---|---|
 | `packages/types` | Shared TypeScript types. No runtime code. |
-| `packages/core` | Schema DSL, Drizzle database layer, Hono API server (REST + GraphQL), auth, media pipeline |
+| `packages/core` | Schema DSL, Drizzle database layer, Hono API server (REST + GraphQL), auth, media pipeline, GDPR module (`packages/core/src/gdpr/`, exported as `@kritano/cms/gdpr`) |
 | `packages/admin` | React 19 SPA — Vite, TanStack Router/Query, Tailwind CSS 4, TipTap editor, dnd-kit |
 | `packages/sdk` | Typed API client for any frontend framework |
 | `packages/astro` | Astro integration — `useCMS()`, `defineTheme()` |
@@ -59,6 +59,17 @@ This single command: starts Docker Compose, creates initial migration, applies m
 - TipTap JSON is the canonical rich text storage format — never Markdown
 - Media stored locally in `./media/` (dev) or `/var/cms/media/` (prod)
 - Admin collection schemas are hardcoded in `packages/admin/src/pages/collection/schemas.ts` — keep in sync with `cms.config.ts`
+
+## GDPR module
+
+Lives in `packages/core/src/gdpr/`, exported as `@kritano/cms/gdpr`. Provides subject lookup, SAR export, erasure, and a permanent audit log (`gdpr_search_log`, `gdpr_deletion_log`).
+
+- Opt-in: requires `GDPR_AUDIT_SECRET` (≥16 chars, generated via `openssl rand -hex 32`). Until set, `/admin/gdpr` and the API endpoints return 503 with a setup hint. Other CMS features unaffected.
+- **Never rotate `GDPR_AUDIT_SECRET`.** Rotating it breaks the link between historic audit-log rows and any future lookups for the same subject.
+- Audit log stores `hmac_sha256(secret, lower(trim(email)))`, never the plaintext email — survives the data it describes without itself becoming a PII liability.
+- Sources are auto-discovered from `addForm()` (any `type: 'email'` field) and `defineCollection()` (any `email()` field or text field whose name matches `/^email$|_email$|Email$/`). Custom tables register imperatively via `registerGdprSource()`.
+- v1 ships: search, export, hard-delete, audit log, admin UI. v2 adds: anonymisation (`onAnonymise`), retention sweep, privacy-notice versioning. v3: dedicated `gdpr` permission, rectification UI, regulator audit-report export.
+- Consumer doc: [docs/gdpr.md](docs/gdpr.md). Full design and remaining-work notes: `gdpr.md` at the repo root.
 
 ## Admin UI ships pre-built
 

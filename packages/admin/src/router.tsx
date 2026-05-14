@@ -33,6 +33,7 @@ import { Webhooks } from '@/pages/Webhooks'
 import { FormList } from '@/pages/forms/FormList'
 import { FormBuilder } from '@/pages/forms/FormBuilder'
 import { FormSubmissions } from '@/pages/forms/FormSubmissions'
+import { Gdpr } from '@/pages/Gdpr'
 
 // Collections are now fetched dynamically from the API by AppLayout and Dashboard
 
@@ -271,6 +272,12 @@ const accountSecurityRoute = createRoute({
   component: AccountSecurity,
 })
 
+const gdprRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/admin/gdpr',
+  component: Gdpr,
+})
+
 const routeTree = rootRoute.addChildren([
   installerRoute,
   loginRoute,
@@ -300,6 +307,7 @@ const routeTree = rootRoute.addChildren([
     apiKeysRoute,
     pluginsRoute,
     accountSecurityRoute,
+    gdprRoute,
     // Collection routes (catch-all — must be last)
     collectionListRoute,
     newDocumentRoute,

@@ -147,6 +147,7 @@ All fields are chainable: `text().required().min(3).max(100)`
 | Search | [docs/search.md](docs/search.md) |
 | OAuth | [docs/oauth.md](docs/oauth.md) |
 | Live preview | [docs/preview.md](docs/preview.md) |
+| GDPR / data subject rights | [docs/gdpr.md](docs/gdpr.md) |
 
 ## Project structure
 
